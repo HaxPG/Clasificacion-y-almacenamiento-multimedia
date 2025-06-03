@@ -43,7 +43,7 @@ export class GalleryComponent implements OnInit {
     },
     {
       title: 'Retrato artístico',
-      category: 'Fotografía',
+      category: 'Fotografía', 
       img: 'https://images.unsplash.com/photo-1504198453319-5ce911bafcde?auto=format&fit=crop&w=800&q=60',
       isSaved: false
     }
