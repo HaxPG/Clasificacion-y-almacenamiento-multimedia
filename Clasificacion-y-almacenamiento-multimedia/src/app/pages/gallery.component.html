@@ -1,0 +1,30 @@
+<div class="gallery-container">
+  <!-- Categorías -->
+  <div class="category-bar">
+    <button
+      *ngFor="let cat of ['Todos', 'Interior', 'Moda', 'Arquitectura', 'Naturaleza', 'Fotografía']"
+      class="category-btn"
+      [class.selected]="cat === selectedCategory"
+      (click)="selectCategory(cat)">
+      {{ cat }}
+    </button>
+  </div>
+
+  <!-- Galería -->
+  <div class="masonry">
+    <div class="masonry-item" *ngFor="let item of filteredItems; let i = index">
+      <div class="card">
+        <img [src]="item.img" [alt]="item.title">
+        <div class="card-overlay">
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.category }}</p>
+          <button class="save-button" (click)="toggleSave(i)">
+            <span *ngIf="!item.isSaved">💾</span>
+            <span *ngIf="item.isSaved">✅</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
