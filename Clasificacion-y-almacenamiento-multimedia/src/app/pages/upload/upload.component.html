@@ -1,1 +1,30 @@
-<p>upload works!</p>
+<div class="upload-container">
+  <h2>Subir archivo multimedia</h2>
+
+  <label>Seleccionar archivo:</label>
+  <input type="file" (change)="onFileChange($event)" />
+
+  <label>Categoría:</label>
+  <select [(ngModel)]="id_categoria">
+    <option value="" disabled selected>Selecciona una categoría</option>
+    <option *ngFor="let cat of categorias" [value]="cat.id_categoria">
+      {{ cat.nombre }}
+    </option>
+  </select>
+
+  <label>Nivel de acceso:</label>
+  <select [(ngModel)]="nivel_acceso">
+    <option value="público">Público</option>
+    <option value="restringido">Restringido</option>
+    <option value="privado">Privado</option>
+  </select>
+
+  <button (click)="upload()" [disabled]="uploading">
+    {{ uploading ? 'Subiendo...' : 'Subir archivo' }}
+  </button>
+
+  <div *ngIf="uploadedUrl" class="preview">
+    <h3>Vista previa:</h3>
+    <img [src]="uploadedUrl" style="max-width: 100%; border-radius: 12px;" />
+  </div>
+</div>

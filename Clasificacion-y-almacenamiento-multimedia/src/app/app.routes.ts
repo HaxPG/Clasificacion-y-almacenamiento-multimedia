@@ -14,4 +14,5 @@ export const routes: Routes = [
   { path: 'preview/:id', component: PreviewComponent },
   { path: 'access', component: AccessControlComponent },
   { path: 'favorites', component: FavoritesComponent },
+  
 ];
