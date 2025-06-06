@@ -72,3 +72,17 @@
   border-radius: 50%;
   background: linear-gradient(to right, #3b82f6, #06b6d4);
 }
+
+.nav-icons a {
+  text-decoration: none;
+  color: inherit;
+}
+.nav-icons i,
+.nav-icons .profile-circle {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.nav-icons i:hover,
+.nav-icons .profile-circle:hover {
+  transform: scale(1.1);
+}
