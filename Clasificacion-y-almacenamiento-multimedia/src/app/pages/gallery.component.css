@@ -1,0 +1,136 @@
+/* Contenedor general */
+.gallery-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f8f9fb;
+}
+
+/* Categorías */
+.category-bar {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 16px 0;
+  gap: 12px;
+  scrollbar-width: none;
+}
+.category-bar::-webkit-scrollbar {
+  display: none;
+}
+.category-btn {
+  padding: 8px 18px;
+  background-color: #e5e7eb;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: #444;
+  transition: all 0.2s ease;
+}
+.category-btn:hover {
+  background-color: #d1d5db;
+}
+.category-btn.selected {
+  background-color: #7c3aed;
+  color: white;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.3);
+}
+
+/* Masonry */
+.masonry {
+  column-count: 3;
+  column-gap: 1.25rem;
+}
+@media (max-width: 1024px) {
+  .masonry { column-count: 2; }
+}
+@media (max-width: 640px) {
+  .masonry { column-count: 1; }
+}
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 1.5rem;
+}
+
+/* Card */
+.card {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+}
+.card img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Overlay */
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 16px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.card:hover .card-overlay {
+  opacity: 1;
+}
+.card-overlay h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+.card-overlay p {
+  margin-top: 4px;
+  font-size: 0.9rem;
+}
+
+/* Botón guardar */
+.save-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: white;
+  color: #7c3aed;
+  border: none;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.save-button:hover {
+  background: #f3f4f6;
+}
+
+/* Botón "Cargar más" */
+.load-more-button {
+  margin: 30px auto;
+  display: block;
+  background-color: #e5e7eb;
+  border: none;
+  border-radius: 9999px;
+  padding: 10px 24px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.load-more-button:hover {
+  background-color: #d1d5db;
+}
