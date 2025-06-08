@@ -13,19 +13,22 @@ export interface File {
   derechos_uso?: string;
   nivel_acceso: 'público' | 'restringido' | 'privado';
   id_usuario: number;
-  id_categoria?: number; // Opcional, si no todos los archivos tienen categoría
-  categoria_nombre?: string; // Propiedad añadida por el JOIN en el backend
-  usuario_nombre?: string; // Propiedad añadida por el JOIN en el backend
-  tags?: string; // Puede ser una cadena de tags separados por comas si usas GROUP_CONCAT
-  colecciones?: string; // Igual para colecciones
-  secciones?: string; // Igual para secciones
+  id_categoria?: number;
+  categoria_nombre?: string; // JOIN en el backend
+  usuario_nombre?: string; // JOIN en el backend
+  tags?: string;
+  colecciones?: string;
+  secciones?: string;
+
+  // 👇 NUEVA PROPIEDAD para visualizaciones
+  views?: number;
 }
 
 export interface Pagination {
   page: number;
   limit: number;
-  total: number; // Total de archivos en la base de datos
-  pages: number; // Total de páginas
+  total: number;
+  pages: number;
 }
 
 export interface PaginatedFiles {
