@@ -4,7 +4,6 @@ import { AuthGuard } from './core/auth/auth-guard'; // Importa la CLASE del guar
 import { LoginComponent } from './features/auth/login/login';
 import { RegisterComponent } from './features/auth/register/register';
 import { UploadComponent } from './pages/upload/upload.component';
-
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
