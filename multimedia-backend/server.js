@@ -14,10 +14,15 @@ dotenv.config()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+// Mueve la declaración de 'app' aquí, antes de cualquier 'app.use'
 const app = express()
 const PORT = process.env.PORT || 3000
 
 // Middleware
+console.log('Ruta base del servidor (__dirname):', __dirname);
+const uploadsPath = path.join(__dirname, "uploads");
+console.log('Ruta de la carpeta uploads que se intenta servir:', uploadsPath);
+
 app.use(
   cors({
     origin: ["http://localhost:4200", "http://localhost:3000"],
@@ -26,7 +31,7 @@ app.use(
 )
 app.use(express.json({ limit: "50mb" }))
 app.use(express.urlencoded({ extended: true, limit: "50mb" }))
-app.use("/uploads", express.static(path.join(__dirname, "uploads")))
+app.use("/uploads", express.static(uploadsPath))
 
 // Database connection
 const dbConfig = {
@@ -681,3 +686,4 @@ app.use("*", (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`)
 })
+
