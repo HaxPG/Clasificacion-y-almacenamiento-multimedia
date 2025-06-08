@@ -1,8 +1,8 @@
 // src/app/core/auth/auth.service.ts
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http'; // Importa HttpErrorResponse
 import { isPlatformBrowser } from '@angular/common';
-import { Observable, BehaviorSubject, of } from 'rxjs';
+import { Observable, BehaviorSubject, of, throwError } from 'rxjs'; // Importa throwError
 import { tap, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { User } from '../../shared/models/user'; // Asegúrate de que la ruta sea correcta
@@ -11,7 +11,10 @@ import { User } from '../../shared/models/user'; // Asegúrate de que la ruta se
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = environment.apiUrl;
+  // CORRECCIÓN CLAVE: Añadir /api a la URL base de autenticación
+  // Esto hará que las peticiones vayan a http://localhost:3000/api/auth/login
+  private authBaseUrl = `${environment.apiUrl}/api/auth`;
+
   private userSubject = new BehaviorSubject<User | null>(null);
   public user$ = this.userSubject.asObservable();
 
@@ -26,30 +29,61 @@ export class AuthService {
     if (isPlatformBrowser(this.platformId)) {
       const userString = localStorage.getItem('currentUser');
       if (userString) {
-        const user: User = JSON.parse(userString);
-        this.userSubject.next(user);
+        try { // Añade un try-catch por si el JSON en localStorage es inválido
+          const user: User = JSON.parse(userString);
+          this.userSubject.next(user);
+        } catch (e) {
+          console.error("Error parsing user from localStorage", e);
+          localStorage.removeItem('currentUser'); // Limpia datos corruptos
+          localStorage.removeItem('jwtToken');
+        }
       }
     }
   }
 
   login(credentials: { correo: string; contraseña: string }): Observable<{ token: string; user: User }> {
-    return this.http.post<{ token: string; user: User }>(`${this.apiUrl}/auth/login`, credentials).pipe(
+    // La URL de login ahora usará authBaseUrl
+    return this.http.post<{ token: string; user: User }>(`${this.authBaseUrl}/login`, credentials).pipe(
       tap(response => {
         if (isPlatformBrowser(this.platformId)) {
           localStorage.setItem('jwtToken', response.token);
           localStorage.setItem('currentUser', JSON.stringify(response.user));
         }
         this.userSubject.next(response.user);
+        console.log('Login successful, token and user saved:', response);
       }),
-      catchError(error => {
+      catchError((error: HttpErrorResponse) => { // Especifica el tipo de error
         console.error('Login failed', error);
-        return of(error); // O manejar el error de forma más sofisticada
+        this.userSubject.next(null); // Asegúrate de limpiar el usuario si el login falla
+
+        let errorMessage = 'Error desconocido al iniciar sesión.';
+        if (error.status === 401) {
+          errorMessage = 'Credenciales inválidas (correo o contraseña incorrectos).';
+        } else if (error.status === 404) {
+          errorMessage = 'El servidor no encontró el endpoint de inicio de sesión. Revisa la URL.';
+        } else if (error.error && error.error.message) {
+          errorMessage = error.error.message; // Mensaje de error del backend
+        } else if (error.message) {
+          errorMessage = `Error de conexión: ${error.message}`; // Mensaje genérico de Angular
+        }
+        // Devuelve un observable de error para que el componente lo capture
+        return throwError(() => new Error(errorMessage));
       })
     );
   }
 
   register(userData: { nombre: string; correo: string; contraseña: string; rol: string }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/register`, userData);
+    // La URL de registro también usará authBaseUrl
+    return this.http.post(`${this.authBaseUrl}/register`, userData).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('Registration failed', error);
+        let errorMessage = 'Error al registrar usuario.';
+        if (error.error && error.error.message) {
+          errorMessage = error.error.message;
+        }
+        return throwError(() => new Error(errorMessage));
+      })
+    );
   }
 
   logout(): void {
@@ -58,6 +92,7 @@ export class AuthService {
       localStorage.removeItem('currentUser');
     }
     this.userSubject.next(null);
+    console.log('User logged out.');
   }
 
   getToken(): string | null {
@@ -68,7 +103,7 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken() && !!this.userSubject.value;
+    return !!this.getToken() && !!this.userSubject.value; // Asegúrate de que haya token y un usuario cargado
   }
 
   isAdmin(): boolean {
