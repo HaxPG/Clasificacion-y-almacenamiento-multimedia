@@ -1,0 +1,56 @@
+// src/app/features/auth/register/register.component.ts
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from '../../../core/auth/auth';
+import { CommonModule } from '@angular/common'; // Importar CommonModule para usar en el template
+
+@Component({
+  selector: 'app-register',
+  templateUrl: './register.html',
+  styleUrls: ['./register.css'],
+  imports: [CommonModule,ReactiveFormsModule],
+})
+export class RegisterComponent implements OnInit {
+  registerForm!: FormGroup;
+  errorMessage: string = '';
+  successMessage: string = '';
+  roles = ['Administrador', 'Periodista', 'Visualizador']; // Roles disponibles
+
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.registerForm = this.fb.group({
+      nombre: ['', Validators.required],
+      correo: ['', [Validators.required, Validators.email]],
+      contraseña: ['', [Validators.required, Validators.minLength(6)]],
+      rol: ['', Validators.required]
+    });
+  }
+
+  onSubmit(): void {
+    if (this.registerForm.valid) {
+      this.authService.register(this.registerForm.value).subscribe({
+        next: (response) => {
+          this.successMessage = response.message || 'Usuario registrado exitosamente.';
+          this.errorMessage = '';
+          this.registerForm.reset(); // Limpiar el formulario
+          // Opcionalmente, redirigir al listado de usuarios o login
+          // this.router.navigate(['/usuarios']);
+        },
+        error: (err) => {
+          this.errorMessage = err.error?.error || 'Error al registrar usuario. Inténtalo de nuevo.';
+          this.successMessage = '';
+          console.error('Register error:', err);
+        }
+      });
+    } else {
+      this.errorMessage = 'Por favor, completa todos los campos correctamente.';
+      this.successMessage = '';
+    }
+  }
+}

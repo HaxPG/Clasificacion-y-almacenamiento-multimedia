@@ -16,15 +16,14 @@
       <div class="card">
         <img [src]="item.img" [alt]="item.title">
         <div class="card-overlay">
-          <h3>{{ item.title }}</h3>
-          <p>{{ item.category }}</p>
-          <button class="save-button" (click)="toggleSave(i)">
-            <span *ngIf="!item.isSaved">💾</span>
-            <span *ngIf="item.isSaved">✅</span>
-          </button>
-        </div>
+  <h3>{{ item.title }}</h3>
+  <p>{{ item.category }}</p>
+  <button class="save-button" (click)="downloadImage(item.img, item.title)">
+    <span>⬇️</span>
+  </button>
+</div>
+
       </div>
     </div>
   </div>
 </div>
-

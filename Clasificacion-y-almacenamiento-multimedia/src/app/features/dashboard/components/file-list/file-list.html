@@ -1,0 +1,123 @@
+<div class="file-list-container">
+  <h2>Gestión de Archivos Multimedia</h2>
+
+  <div class="filters-section">
+    <div class="search-bar">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Buscar por nombre, fuente, lugar..."
+        (keyup.enter)="onSearch()"
+      />
+      <button (click)="onSearch()">Buscar</button>
+    </div>
+
+    <div class="filter-controls">
+      <div class="filter-group">
+        <label for="filterTipo">Tipo:</label>
+        <select id="filterTipo" [(ngModel)]="selectedTipo" (change)="onFilterChange()">
+          <option value="">Todos</option>
+          <option value="imagen">Imagen</option>
+          <option value="video">Video</option>
+          <option value="audio">Audio</option>
+          <option value="documento">Documento</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filterCategory">Categoría:</label>
+        <select id="filterCategory" [(ngModel)]="selectedCategory" (change)="onFilterChange()">
+          <option [ngValue]="null">Todas</option>
+          <option *ngFor="let cat of categories" [ngValue]="cat.id_categoria">{{ cat.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group" *ngIf="userRole === 'Administrador'">
+        <label for="filterAccess">Acceso:</label>
+        <select id="filterAccess" [(ngModel)]="selectedAccessLevel" (change)="onFilterChange()">
+          <option value="">Todos</option>
+          <option value="público">Público</option>
+          <option value="restringido">Restringido</option>
+          <option value="privado">Privado</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+  <ng-container *ngIf="(paginatedFiles$ | async) as paginatedFiles; else loadingOrEmpty">
+    <div *ngIf="paginatedFiles.archivos.length > 0; else noFiles">
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Miniatura/Preview</th>
+              <th>Nombre</th>
+              <th>Tipo</th>
+              <th>Categoría</th>
+              <th>Acceso</th>
+              <th>Fuente</th>
+              <th>Fecha Subida</th>
+              <th>Usuario</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let archivo of paginatedFiles.archivos">
+              <td>
+                <ng-container [ngSwitch]="archivo.tipo">
+                  <img *ngSwitchCase="'imagen'" [src]="getFileUrl(archivo.ruta_storage)" alt="Preview" class="file-thumbnail" />
+                  <video *ngSwitchCase="'video'" [src]="getFileUrl(archivo.ruta_storage)" controls class="file-thumbnail"></video>
+                  <audio *ngSwitchCase="'audio'" [src]="getFileUrl(archivo.ruta_storage)" controls class="file-thumbnail"></audio>
+                  <span *ngSwitchCase="'documento'" class="file-icon"><i class="fas fa-file-alt"></i></span>
+                  <span *ngSwitchDefault class="file-icon"><i class="fas fa-file"></i></span>
+                </ng-container>
+              </td>
+              <td>{{ archivo.nombre_archivo }}</td>
+              <td>{{ archivo.tipo }}</td>
+              <td>{{ archivo.categoria_nombre || 'N/A' }}</td>
+              <td>{{ archivo.nivel_acceso }}</td>
+              <td>{{ archivo.fuente || 'N/A' }}</td>
+              <td>{{ archivo.fecha_subida | date:'short' }}</td>
+              <td>{{ archivo.usuario_nombre || 'N/A' }}</td>
+              <td>
+                <a [href]="getFileUrl(archivo.ruta_storage)" target="_blank" class="action-btn view-btn" title="Ver archivo">
+                  <i class="fas fa-eye"></i>
+                </a>
+                </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="totalPages > 1" class="pagination-controls">
+        <button (click)="goToPage(1)" [disabled]="currentPage === 1" title="Primera página">
+          <i class="fas fa-angle-double-left"></i>
+        </button>
+        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" title="Página anterior">
+          <i class="fas fa-angle-left"></i>
+        </button>
+
+        <span *ngFor="let page of getPagesArray()">
+          <button (click)="goToPage(page)" [class.active]="page === currentPage">{{ page }}</button>
+        </span>
+
+        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" title="Página siguiente">
+          <i class="fas fa-angle-right"></i>
+        </button>
+        <button (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages" title="Última página">
+          <i class="fas fa-angle-double-right"></i>
+        </button>
+        <span class="page-info">Página {{ currentPage }} de {{ totalPages }} (Total: {{ totalFiles }} archivos)</span>
+      </div>
+    </div>
+    <ng-template #noFiles>
+      <div class="no-files-message">No se encontraron archivos con los criterios de búsqueda o filtro.</div>
+    </ng-template>
+  </ng-container>
+
+  <ng-template #loadingOrEmpty>
+    <div class="loading-spinner">Cargando archivos...</div>
+  </ng-template>
+</div>

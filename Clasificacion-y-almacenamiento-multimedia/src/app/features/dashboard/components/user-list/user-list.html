@@ -1,0 +1,25 @@
+<div class="user-list-container">
+  <h3>Gestión de Usuarios</h3>
+  <div *ngIf="errorMessage" class="alert-error">{{ errorMessage }}</div>
+  <table *ngIf="users$ | async as users; else loadingUsers">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Correo</th>
+        <th>Rol</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of users">
+        <td>{{ user.id }}</td>
+        <td>{{ user.nombre }}</td>
+        <td>{{ user.correo }}</td>
+        <td>{{ user.rol }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <ng-template #loadingUsers>
+    <p>Cargando usuarios...</p>
+  </ng-template>
+</div>

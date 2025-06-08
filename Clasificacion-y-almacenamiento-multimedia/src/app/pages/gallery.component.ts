@@ -15,7 +15,21 @@ export class GalleryComponent implements OnInit {
   selectedCategory = 'Todos';
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
-
+downloadImage(imageUrl: string, title: string) {
+  fetch(imageUrl)
+    .then(response => response.blob())
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title.replace(/\s+/g, '_')}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    })
+    .catch(error => console.error('Error al descargar la imagen:', error));
+}
   items = [
     {
       title: 'Diseño elegante',

@@ -1,0 +1,94 @@
+<div class="file-upload-card">
+  <h2>Subir Nuevo Archivo Multimedia</h2>
+
+  <form [formGroup]="fileUploadForm" (ngSubmit)="onSubmit()">
+    <div class="form-section file-input-section">
+      <label for="archivo">Seleccionar Archivo:</label>
+      <input type="file" id="archivo" (change)="onFileSelected($event)" />
+      <span class="file-name" *ngIf="selectedFile">{{ selectedFile.name }}</span>
+      <div *ngIf="fileUploadForm.get('archivo')?.errors?.['required'] && fileUploadForm.get('archivo')?.touched" class="error-message">
+        Archivo es requerido.
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Metadatos del Archivo</h3>
+
+      <div class="form-group">
+        <label for="tipo">Tipo:</label>
+        <select id="tipo" formControlName="tipo">
+          <option value="imagen">Imagen</option>
+          <option value="video">Video</option>
+          <option value="audio">Audio</option>
+          <option value="documento">Documento</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="id_categoria">Categoría:</label>
+        <select id="id_categoria" formControlName="id_categoria">
+          <option [ngValue]="null">-- Seleccionar Categoría --</option>
+          <option *ngFor="let cat of categories" [ngValue]="cat.id_categoria">{{ cat.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="nivel_acceso">Nivel de Acceso:</label>
+        <select id="nivel_acceso" formControlName="nivel_acceso">
+          <option value="público">Público</option>
+          <option value="restringido">Restringido</option>
+          <option value="privado">Privado</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="fuente">Fuente:</label>
+        <input type="text" id="fuente" formControlName="fuente" placeholder="Ej: Agence France-Presse" />
+      </div>
+
+      <div class="form-group">
+        <label for="lugar_captura">Lugar de Captura:</label>
+        <input type="text" id="lugar_captura" formControlName="lugar_captura" placeholder="Ej: Santiago, Chile" />
+      </div>
+
+      <div class="form-group">
+        <label for="fecha_captura">Fecha de Captura:</label>
+        <input type="date" id="fecha_captura" formControlName="fecha_captura" />
+      </div>
+
+      <div class="form-group">
+        <label for="derechos_uso">Derechos de Uso:</label>
+        <textarea id="derechos_uso" formControlName="derechos_uso" placeholder="Descripción de los derechos de uso"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="tags">Tags:</label>
+        <select id="tags" formControlName="tags" multiple>
+          <option *ngFor="let tag of tags" [ngValue]="tag.id_tag">{{ tag.nombre }}</option>
+        </select>
+        <small>Mantén Ctrl/Cmd para seleccionar múltiples</small>
+      </div>
+
+      <div class="form-group">
+        <label for="colecciones">Colecciones:</label>
+        <select id="colecciones" formControlName="colecciones" multiple>
+          <option *ngFor="let col of collections" [ngValue]="col.id_coleccion">{{ col.nombre }}</option>
+        </select>
+        <small>Mantén Ctrl/Cmd para seleccionar múltiples</small>
+      </div>
+
+      <div class="form-group">
+        <label for="secciones">Secciones de Periódico:</label>
+        <select id="secciones" formControlName="secciones" multiple>
+          <option *ngFor="let sec of sections" [ngValue]="sec.id_seccion">{{ sec.nombre }}</option>
+        </select>
+        <small>Mantén Ctrl/Cmd para seleccionar múltiples</small>
+      </div>
+    </div>
+
+    <button type="submit" [disabled]="!fileUploadForm.valid || !selectedFile">Subir Archivo</button>
+  </form>
+
+  <div *ngIf="successMessage" class="alert success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert error">{{ errorMessage }}</div>
+</div>
