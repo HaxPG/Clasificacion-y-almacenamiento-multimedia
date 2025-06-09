@@ -52,7 +52,7 @@
         </div>
       </div>
 
-      <!-- Modal igual que antes -->
+      <!-- Modal -->
       <div class="modal-backdrop" *ngIf="archivoSeleccionado">
         <div class="modal-content">
           <button class="modal-close" (click)="cerrarModal()">×</button>
@@ -75,6 +75,10 @@
             <p><strong>Fuente:</strong> {{ archivoSeleccionado.fuente || 'N/A' }}</p>
             <p><strong>Usuario:</strong> {{ archivoSeleccionado.usuario_nombre || 'N/A' }}</p>
             <p><strong>Visualizaciones:</strong> {{ archivoSeleccionado.views || 0 }}</p>
+            <p><strong>Descargas:</strong> {{ archivoSeleccionado.downloads || 0 }}</p>
+            <button class="download-btn" (click)="descargarArchivo(archivoSeleccionado)">
+              <i class="fas fa-download"></i> Descargar
+            </button>
           </div>
         </div>
       </div>

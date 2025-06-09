@@ -1,4 +1,3 @@
-// src/app/features/dashboard/components/file-list/file-list.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -117,9 +116,10 @@ export class FileListComponent implements OnInit {
     this.pageSubject.next(1);
   }
 
-  getFileUrl(ruta_storage: string): string {
-    return `${environment.apiUrl}/${ruta_storage}`;
+  getFileUrl(ruta: string): string {
+    return `${environment.apiUrl}/${ruta}`;
   }
+
 
   // Modal
   mostrarDetalle(archivo: AppFile): void {
@@ -129,4 +129,24 @@ export class FileListComponent implements OnInit {
   cerrarModal(): void {
     this.archivoSeleccionado = null;
   }
+
+// src/app/features/dashboard/components/file-list/file-list.ts
+descargarArchivo(archivo: AppFile): void {
+  this.fileService.registrarDescarga(archivo.id_archivo).subscribe({
+    next: () => {
+      if (archivo.downloads !== undefined) archivo.downloads++;
+
+      const url = this.getFileUrl(archivo.ruta_storage); // ya debe apuntar a /uploads/...
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = archivo.nombre_archivo || 'archivo';
+      a.target = '_blank';
+      a.click();
+    },
+    error: err => console.error("❌ Error registrando descarga", err)
+  });
+}
+
+
+
 }

@@ -9,18 +9,10 @@ import { File as AppFile, PaginatedFiles } from '../../shared/models/file';
   providedIn: 'root'
 })
 export class FileService {
-  // CORRECCIÓN CLAVE: Simplemente usa environment.apiUrl
-  // Si environment.apiUrl es 'http://localhost:3000/api', entonces
-  // this.apiUrl también será 'http://localhost:3000/api'.
-  // Las peticiones a /archivos, /buscar, /estadisticas irán a
-  // http://localhost:3000/api/archivos, http://localhost:3000/api/buscar, etc. (¡Correcto!)
   private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Obtiene la lista de archivos paginada con opciones de filtrado.
-   */
   getFiles(
     page: number = 1,
     limit: number = 20,
@@ -29,29 +21,18 @@ export class FileService {
     searchTerm?: string,
     nivel_acceso?: string
   ): Observable<PaginatedFiles> {
-    let params = new HttpParams();
-    params = params.append('page', page.toString());
-    params = params.append('limit', limit.toString());
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
 
-    if (tipo) {
-      params = params.append('tipo', tipo);
-    }
-    if (id_categoria !== undefined && id_categoria !== null) {
-      params = params.append('id_categoria', id_categoria.toString());
-    }
-    if (searchTerm && searchTerm.trim() !== '') {
-      params = params.append('searchTerm', searchTerm.trim());
-    }
-    if (nivel_acceso) {
-      params = params.append('nivel_acceso', nivel_acceso);
-    }
+    if (tipo) params = params.append('tipo', tipo);
+    if (id_categoria !== undefined && id_categoria !== null) params = params.append('id_categoria', id_categoria.toString());
+    if (searchTerm && searchTerm.trim() !== '') params = params.append('searchTerm', searchTerm.trim());
+    if (nivel_acceso) params = params.append('nivel_acceso', nivel_acceso);
 
     return this.http.get<PaginatedFiles>(`${this.apiUrl}/archivos`, { params });
   }
 
-  /**
-   * Sube un archivo al servidor junto con sus metadatos.
-   */
   uploadFile(formData: FormData): Observable<HttpEvent<any>> {
     return this.http.post(`${this.apiUrl}/archivos`, formData, {
       reportProgress: true,
@@ -59,21 +40,31 @@ export class FileService {
     });
   }
 
-  // searchFiles y getStatistics permanecen igual
-  searchFiles(
-    query: string,
-    tipo?: string,
-    id_categoria?: number
-  ): Observable<AppFile[]> {
-    let params = new HttpParams();
-    params = params.append('q', query);
+  searchFiles(query: string, tipo?: string, id_categoria?: number): Observable<AppFile[]> {
+    let params = new HttpParams().set('q', query);
     if (tipo) params = params.append('tipo', tipo);
-    if (id_categoria !== undefined && id_categoria !== null) params = params.append('id_categoria', id_categoria.toString());
+    if (id_categoria !== undefined && id_categoria !== null) {
+      params = params.append('id_categoria', id_categoria.toString());
+    }
 
     return this.http.get<AppFile[]>(`${this.apiUrl}/buscar`, { params });
   }
 
   getStatistics(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/estadisticas`);
+  }
+
+  registrarDescarga(id: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/archivos/${id}/descarga`, {});
+  }
+
+  // ✅ Renombrado para evitar colisión
+  descargarArchivoBlob(filename: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/descargar/${filename}`, {
+      responseType: 'blob',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`
+      }
+    });
   }
 }

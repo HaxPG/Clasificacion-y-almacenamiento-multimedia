@@ -31,7 +31,7 @@ app.use(
 )
 app.use(express.json({ limit: "50mb" }))
 app.use(express.urlencoded({ extended: true, limit: "50mb" }))
-app.use("/api/uploads", express.static(uploadsPath)) // Ahora los archivos estáticos también estarán bajo /api/uploads
+app.use("/api/uploads", express.static(uploadsPath)); // Ahora los archivos estáticos también estarán bajo /api/uploads
 
 // Database connection
 const dbConfig = {
@@ -674,16 +674,128 @@ app.get("/api/estadisticas", authenticateToken, authorize(["Administrador"]), as
 
 // Error handling middleware
 app.use((error, req, res, next) => {
-  console.error("Unhandled error:", error)
-  res.status(500).json({ error: "Error interno del servidor" })
-})
+  console.error("Unhandled error:", error);
+  res.status(500).json({ error: "Error interno del servidor" });
+});
 
-// 404 handler
+// contador descarga
+app.post("/api/archivos/:id_archivo/descarga", authenticateToken, async (req, res) => {
+  const { id_archivo } = req.params;
+  try {
+    await pool.execute(
+      "UPDATE archivos SET downloads = COALESCE(downloads, 0) + 1 WHERE id_archivo = ?",
+      [id_archivo]
+    );
+    res.json({ message: "Descarga registrada" });
+  } catch (error) {
+    console.error("Error registrando descarga:", error);
+    res.status(500).json({ error: "Error al registrar descarga" });
+  }
+});
+
+
+app.get("/api/descargar/:archivo", authenticateToken, async (req, res) => {
+  const { archivo } = req.params;
+  const filePath = path.join(__dirname, "uploads", archivo);
+
+  try {
+    // Verifica que el archivo exista
+    const stat = statSync(filePath);
+
+    res.download(filePath, archivo); // fuerza la descarga
+  } catch (error) {
+    console.error("Error descargando archivo:", error.message);
+    res.status(404).json({ error: "Archivo no encontrado para descarga" });
+  }
+});
+
+// manejador 404:
 app.use("*", (req, res) => {
-  res.status(404).json({ error: "Endpoint no encontrado" })
-})
+  res.status(404).json({ error: "Endpoint no encontrado" });
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`)
 })
+
+// Endpoint para descargar archivos directamente
+app.get("/api/descargar/:filename", authenticateToken, async (req, res) => {
+  const { filename } = req.params;
+  
+  const safeFilename = path.basename(filename); // evitar path traversal
+  const filePath = path.join(__dirname, "uploads", safeFilename);
+
+  try {
+    await fs.access(filePath);
+    res.download(filePath);
+  } catch {
+    res.status(404).json({ error: "Archivo no encontrado" });
+  }
+});
+
+
+
+
+// PATCH /api/archivos/:id/descarga → Registrar una descarga
+app.patch("/api/archivos/:id/descarga", authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Verifica si el archivo existe primero
+    const [rows] = await pool.execute("SELECT downloads FROM archivos WHERE id_archivo = ?", [id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Archivo no encontrado" });
+    }
+
+    // Actualiza el contador de descargas
+    await pool.execute(
+      "UPDATE archivos SET downloads = COALESCE(downloads, 0) + 1 WHERE id_archivo = ?",
+      [id]
+    );
+
+    res.json({ message: "Descarga registrada correctamente" });
+  } catch (error) {
+    console.error("Error registrando descarga:", error);
+    res.status(500).json({ error: "Error interno al registrar la descarga" });
+  }
+
+});
+
+app.get('/api/descargar/:id', async (req, res) => {
+  const archivoId = req.params.id;
+
+  try {
+    // 1. Buscar la ruta del archivo
+    const [rows] = await pool.execute('SELECT ruta_storage FROM archivos WHERE id_archivo = ?', [archivoId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Archivo no encontrado' });
+    }
+
+    const ruta = rows[0].ruta_storage;
+    const filePath = path.join(__dirname, ruta); // asegúrate que 'ruta_storage' sea relativa a 'uploads/'
+
+    // 2. Aumentar el contador de descargas
+    await pool.execute('UPDATE archivos SET downloads = downloads + 1 WHERE id_archivo = ?', [archivoId]);
+
+    // 3. Descargar el archivo
+    res.download(filePath);
+  } catch (error) {
+    console.error('Download error:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+// Endpoint para descargar archivo protegido con token
+app.get("/api/descargar/:filename", authenticateToken, async (req, res) => {
+  const { filename } = req.params;
+  const filePath = path.join(__dirname, "uploads", filename);
+
+  try {
+    await fs.access(filePath);
+    res.download(filePath); // ⬅ descarga directa con headers
+  } catch (err) {
+    res.status(404).json({ error: "Archivo no encontrado" });
+  }
+});
 

@@ -19,6 +19,7 @@ export interface File {
   tags?: string;
   colecciones?: string;
   secciones?: string;
+  downloads?: number;
 
   // 👇 NUEVA PROPIEDAD para visualizaciones
   views?: number;
