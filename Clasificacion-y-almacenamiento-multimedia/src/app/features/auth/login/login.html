@@ -1,22 +1,57 @@
 <div class="login-container">
-  <h2>Iniciar Sesión</h2>
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-    <div class="form-group">
-      <label for="correo">Correo Electrónico:</label>
-      <input type="email" id="correo" formControlName="correo" placeholder="tu@email.com">
-      <div *ngIf="loginForm.get('correo')?.invalid && loginForm.get('correo')?.touched" class="error-message">
-        <span *ngIf="loginForm.get('correo')?.errors?.['required']">El correo es requerido.</span>
-        <span *ngIf="loginForm.get('correo')?.errors?.['email']">Formato de correo inválido.</span>
+  <div class="login-card">
+    <h2 class="login-title">Iniciar Sesión</h2>
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="correo">Correo Electrónico:</label>
+        <input
+          type="email"
+          id="correo"
+          formControlName="correo"
+          placeholder="tu@email.com"
+          required
+        />
+        <div
+          *ngIf="
+            loginForm.get('correo')?.invalid &&
+            (loginForm.get('correo')?.dirty || loginForm.get('correo')?.touched)
+          "
+          class="error-message"
+        >
+          <span *ngIf="loginForm.get('correo')?.errors?.['required']"
+            >El correo es requerido.</span
+          >
+          <span *ngIf="loginForm.get('correo')?.errors?.['email']"
+            >Formato de correo inválido.</span
+          >
+        </div>
       </div>
-    </div>
-    <div class="form-group">
-      <label for="contraseña">Contraseña:</label>
-      <input type="password" id="contraseña" formControlName="contraseña" placeholder="********">
-      <div *ngIf="loginForm.get('contraseña')?.invalid && loginForm.get('contraseña')?.touched" class="error-message">
-        <span *ngIf="loginForm.get('contraseña')?.errors?.['required']">La contraseña es requerida.</span>
+      <div class="form-group">
+        <label for="contraseña">Contraseña:</label>
+        <input
+          type="password"
+          id="contraseña"
+          formControlName="contraseña"
+          placeholder="********"
+          required
+        />
+        <div
+          *ngIf="
+            loginForm.get('contraseña')?.invalid &&
+            (loginForm.get('contraseña')?.dirty ||
+              loginForm.get('contraseña')?.touched)
+          "
+          class="error-message"
+        >
+          <span *ngIf="loginForm.get('contraseña')?.errors?.['required']"
+            >La contraseña es requerida.</span
+          >
+        </div>
       </div>
-    </div>
-    <button type="submit" [disabled]="loginForm.invalid">Iniciar Sesión</button>
-  </form>
-  <div *ngIf="errorMessage" class="alert-error">{{ errorMessage }}</div>
+      <button type="submit" [disabled]="!loginForm.valid" class="login-button">
+        Iniciar Sesión
+      </button>
+    </form>
+    <div *ngIf="errorMessage" class="alert error">{{ errorMessage }}</div>
+  </div>
 </div>
