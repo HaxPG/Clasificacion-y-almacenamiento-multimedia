@@ -1,6 +1,6 @@
 // src/app/core/services/file.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpEvent } from '@angular/common/http'; // Importa HttpEvent
+import { HttpClient, HttpParams, HttpEvent } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { File as AppFile, PaginatedFiles } from '../../shared/models/file';
@@ -9,13 +9,17 @@ import { File as AppFile, PaginatedFiles } from '../../shared/models/file';
   providedIn: 'root'
 })
 export class FileService {
-  private apiUrl = `${environment.apiUrl}/api`;
+  // CORRECCIÓN CLAVE: Simplemente usa environment.apiUrl
+  // Si environment.apiUrl es 'http://localhost:3000/api', entonces
+  // this.apiUrl también será 'http://localhost:3000/api'.
+  // Las peticiones a /archivos, /buscar, /estadisticas irán a
+  // http://localhost:3000/api/archivos, http://localhost:3000/api/buscar, etc. (¡Correcto!)
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
   /**
    * Obtiene la lista de archivos paginada con opciones de filtrado.
-   * (Este método ya estaba bien para la funcionalidad de listado)
    */
   getFiles(
     page: number = 1,
@@ -47,15 +51,11 @@ export class FileService {
 
   /**
    * Sube un archivo al servidor junto con sus metadatos.
-   * Ahora incluye el seguimiento del progreso de la subida.
-   *
-   * @param formData Objeto FormData que contiene el archivo y los metadatos.
-   * @returns Un Observable que emite eventos HTTP (progreso, respuesta final).
    */
-  uploadFile(formData: FormData): Observable<HttpEvent<any>> { // Cambiado a HttpEvent<any>
+  uploadFile(formData: FormData): Observable<HttpEvent<any>> {
     return this.http.post(`${this.apiUrl}/archivos`, formData, {
-      reportProgress: true, // Habilita el seguimiento del progreso de la subida
-      observe: 'events'    // Observa todos los eventos HTTP (incluyendo HttpEventType.UploadProgress)
+      reportProgress: true,
+      observe: 'events'
     });
   }
 

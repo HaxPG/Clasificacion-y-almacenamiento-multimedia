@@ -31,7 +31,7 @@ app.use(
 )
 app.use(express.json({ limit: "50mb" }))
 app.use(express.urlencoded({ extended: true, limit: "50mb" }))
-app.use("/uploads", express.static(uploadsPath))
+app.use("/api/uploads", express.static(uploadsPath)) // Ahora los archivos estáticos también estarán bajo /api/uploads
 
 // Database connection
 const dbConfig = {
