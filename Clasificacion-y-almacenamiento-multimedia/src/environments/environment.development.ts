@@ -1,5 +1,6 @@
 // src/environments/environment.development.ts
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:3000' // <-- ¡CORRECCIÓN AQUÍ! Quita el "/api"
+  production: true,
+  apiUrl: 'http://localhost:3000/api' // <-- ¡CORRECCIÓN AQUÍ! Quita el "/api"
 };
+
