@@ -44,11 +44,6 @@ export class FileUploadComponent implements OnInit {
 
   ngOnInit(): void {
     this.fileUploadForm = this.fb.group({
-      // No necesitamos un FormControl para 'archivo' si solo lo manejamos con selectedFile y validación manual
-      // Si quieres mantener la validación 'required' con Reactive Forms para el input type="file",
-      // la forma más robusta es crear un FormControl separado que solo valide la presencia del archivo
-      // y luego adjuntarlo manualmente al FormData.
-      // Por ahora, lo dejaremos como está en tu HTML, pero el manejo del 'archivo' se hará vía 'selectedFile'.
       tipo: ['documento', Validators.required],
       fuente: [''],
       lugar_captura: [''],
@@ -89,16 +84,6 @@ export class FileUploadComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       this.selectedFile = input.files[0];
-      // Para la validación 'archivo' en el formulario reactivo
-      // Puedes simular que el campo 'archivo' está lleno si tienes un FormControl para ello
-      // Si no tienes un FormControl para 'archivo', la validación del HTML no funcionará
-      // La mejor práctica es manejar la validación del archivo fuera del FormGroup principal
-      // o con un FormControl que sea un 'Blob' o 'File'.
-      // Para este caso, si fileUploadForm.get('archivo') es nulo, este patchValue no funcionará,
-      // pero la lógica de 'selectedFile' sigue siendo válida para el envío.
-      // Si el `formControlName="archivo"` realmente existe, esto es correcto:
-      // this.fileUploadForm.get('archivo')?.setValue(this.selectedFile);
-
       // Determinar el tipo de archivo automáticamente
       const mimeType = this.selectedFile.type;
       let detectedType = 'documento';
@@ -112,7 +97,6 @@ export class FileUploadComponent implements OnInit {
       this.fileUploadForm.patchValue({ tipo: detectedType });
     } else {
       this.selectedFile = null;
-      // this.fileUploadForm.get('archivo')?.setValue(null); // Si tenías un FormControl para el archivo
     }
     // Reiniciar mensajes de estado
     this.errorMessage = '';
@@ -121,24 +105,27 @@ export class FileUploadComponent implements OnInit {
   }
 
   onSubmit(): void {
-    // Asegurarse de que el formulario es válido Y que un archivo ha sido seleccionado
     if (this.fileUploadForm.valid && this.selectedFile) {
       this.errorMessage = '';
       this.successMessage = '';
       this.uploadProgress = 0;
 
       const formData = new FormData();
-      formData.append('file', this.selectedFile, this.selectedFile.name); // 'file' es el nombre que el backend espera para el archivo
+      // ¡¡CORRECCIÓN AQUÍ!! Cambia 'file' por 'archivo' para que coincida con Multer en el backend
+      formData.append('archivo', this.selectedFile, this.selectedFile.name);
 
-      // Añadir otros campos del formulario
       Object.keys(this.fileUploadForm.value).forEach(key => {
         const value = this.fileUploadForm.get(key)?.value;
-        // Excluir 'archivo' si fuera un FormControl
         if (key !== 'archivo' && value !== null && value !== undefined) {
-          // Si el valor es un array (para tags, colecciones, secciones), lo adjuntamos uno por uno
-          // Esto es más común si el backend usa multer o similar para procesar arrays de IDs
+          // Si el valor es un array (para tags, colecciones, secciones), lo convertimos a JSON string
+          // para enviarlo como un único string al backend.
+          // Tu backend deberá parsear estos strings JSON de vuelta a arrays.
           if (Array.isArray(value)) {
-            value.forEach((item: any) => formData.append(key, item.toString()));
+            // Es crucial que el backend maneje estos arrays como JSON strings,
+            // o que la lógica en el backend se adapte a cómo Multer parsea múltiples valores
+            // de un mismo campo (ej. formData.append('tags', tag1); formData.append('tags', tag2);)
+            // Si el backend espera un array de IDs, envíalo como un string JSON
+            formData.append(key, JSON.stringify(value));
           } else {
             formData.append(key, value);
           }
@@ -147,25 +134,20 @@ export class FileUploadComponent implements OnInit {
 
       this.fileService.uploadFile(formData).subscribe({
         next: (event) => {
-          // Manejar el progreso de la subida
           if (event.type === HttpEventType.UploadProgress) {
             this.uploadProgress = Math.round((100 * event.loaded) / (event.total || 1));
           } else if (event instanceof HttpResponse) {
-            // Cuando la subida se ha completado y se recibe la respuesta final
             this.successMessage = 'Archivo subido exitosamente!';
-            // La respuesta de tu backend debería tener 'filename' como propiedad
             if (event.body && event.body.filename) {
                 this.successMessage += `: ${event.body.filename}`;
             }
             this.errorMessage = '';
-            this.resetForm(); // Limpiar el formulario y el archivo seleccionado
+            this.resetForm();
             console.log('File upload response:', event.body);
-            // Opcional: Podrías redirigir al usuario, por ejemplo, a la lista de archivos
-            // this.router.navigate(['/dashboard/files']);
           }
         },
         error: (err) => {
-          this.uploadProgress = 0; // Resetear progreso en caso de error
+          this.uploadProgress = 0;
           this.errorMessage = err.error?.error || 'Error al subir el archivo. Inténtalo de nuevo.';
           this.successMessage = '';
           console.error('Upload error:', err);
@@ -173,7 +155,6 @@ export class FileUploadComponent implements OnInit {
       });
     } else {
       this.errorMessage = 'Por favor, selecciona un archivo y completa todos los campos requeridos.';
-      // Marcar todos los controles como 'touched' para mostrar los errores de validación
       this.fileUploadForm.markAllAsTouched();
     }
   }
@@ -192,10 +173,9 @@ export class FileUploadComponent implements OnInit {
       secciones: [],
     });
     this.selectedFile = null;
-    // Necesitas resetear el input type="file" manualmente si no tiene formControlName directo
     const fileInput = document.getElementById('archivo') as HTMLInputElement;
     if (fileInput) {
-      fileInput.value = ''; // Limpiar el valor del input file
+      fileInput.value = '';
     }
     this.uploadProgress = 0;
   }
