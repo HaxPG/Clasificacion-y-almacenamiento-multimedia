@@ -1,28 +1,24 @@
-<nav class="sidebar-container" [class.collapsed]="isCollapsed">
-  <div class="brand">🎥 MediaSys</div>
-
-  <button class="toggle-btn" (click)="toggleSidebar()">☰</button>
-
-  <div class="search-box">
-    <input type="text" placeholder="Buscar..." />
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1 class="title">Pinterest <strong>MEJORADO</strong></h1>
+    <p class="admin-label">Hola, <span>Admin Principal</span><br><small>(Administrador)</small></p>
   </div>
 
-  <ul class="nav-links">
-    <li routerLink="/" routerLinkActive="active">
-      <i class="fas fa-home"></i>
-      <span>Inicio</span>
-    </li>
-    <li routerLink="/upload" routerLinkActive="active">
-      <i class="fas fa-cloud-upload-alt"></i>
-      <span>Subir</span>
-    </li>
-    <li routerLink="/dashboard/archivos" routerLinkActive="active">
-      <i class="fas fa-folder-open"></i>
-      <span>Archivos</span>
-    </li>
-    <li routerLink="/dashboard/usuarios" routerLinkActive="active">
-      <i class="fas fa-users-cog"></i>
-      <span>Usuarios</span>
-    </li>
-  </ul>
-</nav>
+  <nav class="sidebar-nav">
+    <a routerLink="/dashboard/archivos" routerLinkActive="active">
+      <i class="fas fa-folder-open"></i> Gestión de Archivos
+    </a>
+    <a routerLink="/dashboard/subir" routerLinkActive="active">
+      <i class="fas fa-upload"></i> Subir Archivo
+    </a>
+    <a routerLink="/dashboard/usuarios" routerLinkActive="active">
+      <i class="fas fa-users-cog"></i> Gestión de Usuarios
+    </a>
+  </nav>
+
+  <div class="logout-section">
+    <button class="logout-button">
+      <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+    </button>
+  </div>
+</aside>

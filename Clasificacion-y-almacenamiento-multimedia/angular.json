@@ -24,9 +24,11 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
               "src/styles.css"
             ],
             "scripts": [],
+
             "server": "src/main.server.ts",
             "prerender": true,
             "ssr": {
@@ -106,4 +108,5 @@
   "cli": {
     "analytics": "ca958a80-661c-483e-93d7-c7973c296aaa"
   }
+  
 }
