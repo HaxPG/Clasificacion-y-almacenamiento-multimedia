@@ -1,19 +1,41 @@
 <div class="file-list-container">
   <h2>Gestión de Archivos Multimedia</h2>
 
-  <!-- filtros sin cambios -->
+  <!-- Filtros -->
   <div class="filters-section">
-    <!-- aquí mantienes tu lógica de búsqueda y filtros -->
-    <!-- ... -->
+    <input
+      type="text"
+      placeholder="🔖 Buscar por etiquetas..."
+      [(ngModel)]="tagTerm"
+      (input)="onSearch()"
+      class="tag-search-input"
+    />
+
+    <select [(ngModel)]="selectedTipo" (change)="onFilterChange()">
+      <option value="">Todos los tipos</option>
+      <option value="imagen">Imagen</option>
+      <option value="video">Video</option>
+      <option value="audio">Audio</option>
+      <option value="documento">Documento</option>
+    </select>
+
+    <select [(ngModel)]="selectedAccessLevel" (change)="onFilterChange()">
+      <option value="">Todos los accesos</option>
+      <option value="público">Público</option>
+      <option value="restringido">Restringido</option>
+      <option value="privado">Privado</option>
+    </select>
+
+    <button (click)="resetFilters()">Reiniciar filtros</button>
   </div>
 
-  <ng-container *ngIf="(paginatedFiles$ | async) as paginatedFiles; else loadingOrEmpty">
-    <div *ngIf="paginatedFiles.archivos.length > 0; else noFiles">
-      <!-- Tarjetas -->
+  <!-- Contenido -->
+  <ng-container *ngIf="(archivos$ | async) as data; else loadingOrEmpty">
+    <div *ngIf="data.archivos.length > 0; else noFiles">
       <div class="file-grid">
         <div
           class="file-card"
-          *ngFor="let archivo of paginatedFiles.archivos"
+          *ngFor="let archivo of data.archivos"
           (click)="mostrarDetalle(archivo)"
         >
           <ng-container [ngSwitch]="archivo.tipo">
@@ -24,10 +46,8 @@
             <div *ngSwitchDefault class="file-icon"><i class="fas fa-file fa-3x"></i></div>
           </ng-container>
 
-          <!-- Nombre del archivo siempre visible -->
           <div class="file-name">{{ archivo.nombre_archivo }}</div>
 
-          <!-- Badges -->
           <div class="file-badges">
             <span class="badge tipo">
               {{
@@ -85,7 +105,7 @@
     </div>
 
     <ng-template #noFiles>
-      <div class="no-files-message">No se encontraron archivos con los criterios de búsqueda o filtro.</div>
+      <div class="no-files-message">No se encontraron archivos con las etiquetas buscadas.</div>
     </ng-template>
   </ng-container>
 

@@ -1,18 +1,23 @@
 <div class="file-upload-card">
-  <h2>Subir Nuevo Archivo Multimedia</h2>
+  <h2><i class="fas fa-upload"></i> Subir Nuevo Archivo Multimedia</h2>
 
   <form [formGroup]="fileUploadForm" (ngSubmit)="onSubmit()">
+
+    <!-- INPUT DE ARCHIVO -->
     <div class="form-section file-input-section">
-      <label for="archivo">Seleccionar Archivo:</label>
-      <input type="file" id="archivo" (change)="onFileSelected($event)" />
-      <span class="file-name" *ngIf="selectedFile">{{ selectedFile.name }}</span>
-      <div *ngIf="fileUploadForm.get('archivo')?.errors?.['required'] && fileUploadForm.get('archivo')?.touched" class="error-message">
-        Archivo es requerido.
+      <div class="form-group">
+        <label for="archivo"><i class="fas fa-file-upload"></i> Seleccionar Archivo:</label>
+        <input type="file" id="archivo" (change)="onFileSelected($event)" />
+        <span class="file-name" *ngIf="selectedFile">{{ selectedFile.name }}</span>
+        <div *ngIf="fileUploadForm.get('archivo')?.errors?.['required'] && fileUploadForm.get('archivo')?.touched" class="error-message">
+          Archivo es requerido.
+        </div>
       </div>
     </div>
 
+    <!-- METADATOS -->
     <div class="form-section">
-      <h3>Metadatos del Archivo</h3>
+      <h3><i class="fas fa-info-circle"></i> Metadatos del Archivo</h3>
 
       <div class="form-group">
         <label for="tipo">Tipo:</label>
@@ -66,7 +71,7 @@
         <select id="tags" formControlName="tags" multiple>
           <option *ngFor="let tag of tags" [ngValue]="tag.id_tag">{{ tag.nombre }}</option>
         </select>
-        <small>Mantén Ctrl/Cmd para seleccionar múltiples</small>
+        <small>Usa Ctrl o Cmd para seleccionar múltiples opciones</small>
       </div>
 
       <div class="form-group">
@@ -74,7 +79,7 @@
         <select id="colecciones" formControlName="colecciones" multiple>
           <option *ngFor="let col of collections" [ngValue]="col.id_coleccion">{{ col.nombre }}</option>
         </select>
-        <small>Mantén Ctrl/Cmd para seleccionar múltiples</small>
+        <small>Usa Ctrl o Cmd para seleccionar múltiples opciones</small>
       </div>
 
       <div class="form-group">
@@ -82,11 +87,13 @@
         <select id="secciones" formControlName="secciones" multiple>
           <option *ngFor="let sec of sections" [ngValue]="sec.id_seccion">{{ sec.nombre }}</option>
         </select>
-        <small>Mantén Ctrl/Cmd para seleccionar múltiples</small>
+        <small>Usa Ctrl o Cmd para seleccionar múltiples opciones</small>
       </div>
     </div>
 
-    <button type="submit" [disabled]="!fileUploadForm.valid || !selectedFile">Subir Archivo</button>
+    <button type="submit" [disabled]="!fileUploadForm.valid || !selectedFile">
+      <i class="fas fa-cloud-upload-alt"></i> Subir Archivo
+    </button>
   </form>
 
   <div *ngIf="successMessage" class="alert success">{{ successMessage }}</div>

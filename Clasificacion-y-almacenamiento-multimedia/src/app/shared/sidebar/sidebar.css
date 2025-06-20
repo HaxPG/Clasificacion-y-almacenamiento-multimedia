@@ -8,14 +8,14 @@
   flex-direction: column;
   justify-content: space-between;
   font-family: 'Segoe UI', sans-serif;
-  box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+  box-shadow: 2px 0 5px rgba(120, 144, 211, 0.05);
 }
 
 .sidebar .header h1 {
   font-size: 1.4rem;
   font-weight: bold;
   margin: 0;
-  color: #1f2937;
+  color: #7da0d1;
 }
 
 .sidebar .header h1 span {

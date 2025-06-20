@@ -1,25 +1,38 @@
-<div class="user-list-container">
-  <h3>Gestión de Usuarios</h3>
+<div class="user-list-card">
+  <div class="header-bar">
+    <h2>Gestión de Usuarios</h2>
+    <button class="add-user-btn" (click)="agregarUsuario()">+ Agregar Usuario</button>
+  </div>
+
   <div *ngIf="errorMessage" class="alert-error">{{ errorMessage }}</div>
-  <table *ngIf="users$ | async as users; else loadingUsers">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Nombre</th>
-        <th>Correo</th>
-        <th>Rol</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let user of users">
-        <td>{{ user.id }}</td>
-        <td>{{ user.nombre }}</td>
-        <td>{{ user.correo }}</td>
-        <td>{{ user.rol }}</td>
-      </tr>
-    </tbody>
-  </table>
+
+  <ng-container *ngIf="users$ | async as users; else loadingUsers">
+    <table class="user-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Correo</th>
+          <th>Rol</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{ user.id }}</td>
+          <td>{{ user.nombre }}</td>
+          <td>{{ user.correo }}</td>
+          <td>{{ user.rol }}</td>
+          <td>
+            <button class="action-btn edit" (click)="editarUsuario(user)">✏️</button>
+            <button class="action-btn delete" (click)="eliminarUsuario(user.id)">🗑️</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
+
   <ng-template #loadingUsers>
-    <p>Cargando usuarios...</p>
+    <div class="loading-message">Cargando usuarios...</div>
   </ng-template>
 </div>

@@ -1,4 +1,5 @@
 // src/app/core/services/user.service.ts
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -13,13 +14,28 @@ export class UserService {
 
   constructor(private http: HttpClient) {}
 
+  // Obtener todos los usuarios
   getUsers(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/usuarios`);
   }
 
+  // Obtener un usuario por ID
   getUserById(id: number): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/usuarios/${id}`);
   }
 
-  // Agrega métodos para actualizar o eliminar si tu backend lo permite
+  // Eliminar un usuario por ID
+  deleteUser(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/usuarios/${id}`);
+  }
+
+  // Crear un nuevo usuario (opcional)
+  createUser(user: User): Observable<User> {
+    return this.http.post<User>(`${this.apiUrl}/usuarios`, user);
+  }
+
+  // Actualizar un usuario existente (opcional)
+  updateUser(id: number, user: User): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/usuarios/${id}`, user);
+  }
 }

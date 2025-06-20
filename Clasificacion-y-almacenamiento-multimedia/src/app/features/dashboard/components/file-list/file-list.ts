@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core'; 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, switchMap, tap, catchError } from 'rxjs';
 
 import { FileService } from '../../../../core/services/file';
-import { File as AppFile, PaginatedFiles } from '../../../../shared/models/file';
+import { File as AppFile } from '../../../../shared/models/file';
 import { environment } from '../../../../../environments/environment';
 
 @Component({
@@ -20,28 +20,26 @@ import { environment } from '../../../../../environments/environment';
   styleUrls: ['./file-list.css']
 })
 export class FileListComponent implements OnInit {
-  private pageSubject = new BehaviorSubject<number>(1);
-  paginatedFiles$!: Observable<PaginatedFiles>;
+  archivos$: Observable<{ archivos: AppFile[] }> = new Observable();
   error: string | null = null;
   isLoading: boolean = false;
 
-  private limit: number = 10;
+  private limit: number = 1000;
+  private pageSubject = new BehaviorSubject<number>(1);
 
-  // Filtros
-  searchTerm: string = '';
+  tagTerm: string = '';  // Cambio aquí
   selectedTipo: string = '';
   selectedCategory: number | null = null;
   selectedAccessLevel: string = '';
   categories: any[] = [];
   userRole: string = 'Usuario';
 
-  // Modal
   archivoSeleccionado: AppFile | null = null;
 
   constructor(private fileService: FileService) {}
 
   ngOnInit(): void {
-    this.paginatedFiles$ = this.pageSubject.pipe(
+    this.archivos$ = this.pageSubject.pipe(
       tap(() => {
         this.error = null;
         this.isLoading = true;
@@ -52,52 +50,22 @@ export class FileListComponent implements OnInit {
           this.limit,
           this.selectedTipo || undefined,
           this.selectedCategory || undefined,
-          this.searchTerm.trim() || undefined,
+          this.tagTerm.trim() || undefined,  // Usamos tagTerm en lugar de searchTerm
           this.selectedAccessLevel || undefined
         ).pipe(
           tap(() => this.isLoading = false),
           catchError(err => {
             this.isLoading = false;
             this.error = `Error al cargar los archivos: ${err.statusText || err.message || 'Error desconocido'}`;
-            return of({ archivos: [], pagination: { page: 1, limit: this.limit, total: 0, pages: 0 } } as PaginatedFiles);
+            return of({ archivos: [] });
           })
         )
       )
     );
   }
 
-  // Métodos para paginación y filtros
   goToPage(page: number): void {
     this.pageSubject.next(page);
-  }
-
-  getPagesArray(currentPage: number, totalPages: number): number[] {
-    const pagesArray = [];
-    const maxPagesToShow = 5;
-    let startPage: number, endPage: number;
-
-    if (totalPages <= maxPagesToShow) {
-      startPage = 1;
-      endPage = totalPages;
-    } else {
-      const maxPagesBeforeCurrentPage = Math.floor(maxPagesToShow / 2);
-      const maxPagesAfterCurrentPage = Math.ceil(maxPagesToShow / 2) - 1;
-      if (currentPage <= maxPagesBeforeCurrentPage) {
-        startPage = 1;
-        endPage = maxPagesToShow;
-      } else if (currentPage + maxPagesAfterCurrentPage >= totalPages) {
-        startPage = totalPages - maxPagesToShow + 1;
-        endPage = totalPages;
-      } else {
-        startPage = currentPage - maxPagesBeforeCurrentPage;
-        endPage = currentPage + maxPagesAfterCurrentPage;
-      }
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pagesArray.push(i);
-    }
-    return pagesArray;
   }
 
   onFilterChange(): void {
@@ -109,7 +77,7 @@ export class FileListComponent implements OnInit {
   }
 
   resetFilters(): void {
-    this.searchTerm = '';
+    this.tagTerm = '';  // También reseteamos tagTerm
     this.selectedTipo = '';
     this.selectedCategory = null;
     this.selectedAccessLevel = '';
@@ -120,8 +88,6 @@ export class FileListComponent implements OnInit {
     return `${environment.apiUrl}/${ruta}`;
   }
 
-
-  // Modal
   mostrarDetalle(archivo: AppFile): void {
     this.archivoSeleccionado = archivo;
   }
@@ -130,23 +96,19 @@ export class FileListComponent implements OnInit {
     this.archivoSeleccionado = null;
   }
 
-// src/app/features/dashboard/components/file-list/file-list.ts
-descargarArchivo(archivo: AppFile): void {
-  this.fileService.registrarDescarga(archivo.id_archivo).subscribe({
-    next: () => {
-      if (archivo.downloads !== undefined) archivo.downloads++;
+  descargarArchivo(archivo: AppFile): void {
+    this.fileService.registrarDescarga(archivo.id_archivo).subscribe({
+      next: () => {
+        if (archivo.downloads !== undefined) archivo.downloads++;
 
-      const url = this.getFileUrl(archivo.ruta_storage); // ya debe apuntar a /uploads/...
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = archivo.nombre_archivo || 'archivo';
-      a.target = '_blank';
-      a.click();
-    },
-    error: err => console.error("❌ Error registrando descarga", err)
-  });
-}
-
-
-
+        const url = this.getFileUrl(archivo.ruta_storage);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = archivo.nombre_archivo || 'archivo';
+        a.target = '_blank';
+        a.click();
+      },
+      error: err => console.error("❌ Error registrando descarga", err)
+    });
+  }
 }
