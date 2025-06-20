@@ -1,24 +1,21 @@
 <aside class="sidebar">
-  <div class="sidebar-header">
-    <h1 class="title">Pinterest <strong>MEJORADO</strong></h1>
-    <p class="admin-label">Hola, <span>Admin Principal</span><br><small>(Administrador)</small></p>
+  <div class="top">
+    <div class="header">
+      <h1>Pinterest <span>MEJORADO</span></h1>
+      <p>Hola, Admin Principal</p>
+      <small>(Administrador)</small>
+    </div>
+
+    <nav>
+      <ul>
+        <li><a class="active" href="#"><i class="fas fa-folder-open"></i> Gestión de Archivos</a></li>
+        <li><a href="#"><i class="fas fa-upload"></i> Subir Archivo</a></li>
+        <li><a href="#"><i class="fas fa-users"></i> Gestión de Usuarios</a></li>
+      </ul>
+    </nav>
   </div>
 
-  <nav class="sidebar-nav">
-    <a routerLink="/dashboard/archivos" routerLinkActive="active">
-      <i class="fas fa-folder-open"></i> Gestión de Archivos
-    </a>
-    <a routerLink="/dashboard/subir" routerLinkActive="active">
-      <i class="fas fa-upload"></i> Subir Archivo
-    </a>
-    <a routerLink="/dashboard/usuarios" routerLinkActive="active">
-      <i class="fas fa-users-cog"></i> Gestión de Usuarios
-    </a>
-  </nav>
-
-  <div class="logout-section">
-    <button class="logout-button">
-      <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-    </button>
+  <div class="bottom">
+    <button><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
   </div>
 </aside>

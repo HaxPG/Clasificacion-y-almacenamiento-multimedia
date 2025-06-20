@@ -1,36 +1,66 @@
 <div class="dashboard-container">
   <!-- Sidebar -->
   <aside class="sidebar" [class.collapsed]="isCollapsed">
+    <!-- Encabezado de la barra lateral -->
     <div class="sidebar-header">
-      <span class="brand">Pinterest MEJORADO</span>
-      <button class="menu-toggle" (click)="toggleSidebar()">☰</button>
+      <span class="brand">Pinterest <strong>MEJORADO</strong></span>
+      <button class="menu-toggle" (click)="toggleSidebar()" aria-label="Toggle sidebar">
+        <i class="fas fa-bars"></i>
+      </button>
     </div>
 
+    <!-- Información del usuario -->
     <div class="user-info" *ngIf="(currentUser$ | async) as user">
-      <p>Hola, {{ user.nombre }} <br> <small>({{ user.rol }})</small></p>
+      <p>Hola, {{ user.nombre }}</p>
+      <small class="user-role">({{ user.rol }})</small>
     </div>
 
+    <!-- Navegación -->
     <nav class="nav-links">
-      <a routerLink="/dashboard/archivos" routerLinkActive="active"><i class="fas fa-folder-open"></i> Gestión de Archivos</a>
-      <a routerLink="/dashboard/subir-archivo" routerLinkActive="active" *ngIf="isAdmin || isJournalist">
-        <i class="fas fa-upload"></i> Subir Archivo
+      <a
+        routerLink="/dashboard/archivos"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <i class="fas fa-folder-open"></i>
+        Gestión de Archivos
       </a>
-      <a routerLink="/dashboard/usuarios" routerLinkActive="active" *ngIf="isAdmin">
-        <i class="fas fa-users-cog"></i> Gestión de Usuarios
+
+      <a
+        routerLink="/dashboard/subir-archivo"
+        routerLinkActive="active"
+        *ngIf="isAdmin || isJournalist"
+      >
+        <i class="fas fa-upload"></i>
+        Subir Archivo
+      </a>
+
+      <a
+        routerLink="/dashboard/usuarios"
+        routerLinkActive="active"
+        *ngIf="isAdmin"
+      >
+        <i class="fas fa-users-cog"></i>
+        Gestión de Usuarios
       </a>
     </nav>
 
-    <button class="logout-btn" (click)="logout()">Cerrar Sesión</button>
+    <!-- Botón cerrar sesión -->
+    <button class="logout-btn" (click)="logout()">
+      <i class="fas fa-sign-out-alt"></i>
+      Cerrar Sesión
+    </button>
   </aside>
+
+  <!-- Botón flotante de colapso para móviles -->
   <button
-  class="floating-toggle-btn"
-  *ngIf="showToggleButton"
-  (click)="toggleSidebar()"
->
-  <i class="fas fa-bars"></i>
-</button>
-
-
+    class="floating-toggle-btn"
+    *ngIf="showToggleButton"
+    (click)="toggleSidebar()"
+    aria-label="Mostrar u ocultar menú"
+  >
+    <i class="fas fa-bars"></i>
+  </button>
 
   <!-- Contenido principal -->
   <main class="content">
