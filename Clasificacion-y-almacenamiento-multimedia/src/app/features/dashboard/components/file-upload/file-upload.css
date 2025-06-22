@@ -1,3 +1,5 @@
+/* src/app/features/dashboard/components/file-upload/file-upload.css */
+
 .file-upload-card {
   background-color: #fefefe;
   border-radius: 12px;
@@ -77,9 +79,10 @@
   min-height: 100px;
 }
 
-.form-group select[multiple] {
+/* Esta regla ya no es necesaria si se reemplaza select[multiple] por checkboxes */
+/* .form-group select[multiple] {
   min-height: 130px;
-}
+} */
 
 .file-input-section input[type="file"] {
   padding: 10px;
@@ -154,11 +157,12 @@ button[type="submit"]:disabled {
   margin-top: 6px;
 }
 
-small {
+/* Esta regla ya no es necesaria si se elimina el mensaje de "Ctrl o Cmd" */
+/* small {
   color: #6b7280;
   font-size: 0.85em;
   margin-top: 4px;
-}
+} */
 
 @media (max-width: 768px) {
   .file-upload-card {
@@ -177,4 +181,46 @@ small {
   .form-section h3 {
     font-size: 1.2em;
   }
+}
+
+/* --- ESTILOS AGREGADOS PARA CHECKBOXES DE SELECCIÓN MÚLTIPLE --- */
+.checkbox-group {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  background-color: #f9f9f9;
+}
+
+.checkbox-group label {
+  margin-bottom: 10px; /* Separación del título del grupo */
+  color: #333;
+}
+
+.checkbox-container {
+  display: flex;
+  flex-wrap: wrap; /* Permite que los elementos pasen a la siguiente línea en pantallas pequeñas */
+  gap: 10px; /* Espacio entre los checkboxes */
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap; /* Evita que el texto del label se rompa */
+}
+
+.checkbox-item input[type="checkbox"] {
+  margin-right: 5px;
+  /* Puedes personalizar el tamaño si quieres */
+  transform: scale(1.1);
+}
+
+.checkbox-item label {
+  font-weight: normal; /* Para que el label individual no sea negrita */
+  cursor: pointer;
+  margin-bottom: 0; /* Anula el margin-bottom del label del form-group */
+}
+
+.checkbox-item input[type="checkbox"]:checked + label {
+  color: #007bff; /* Color para los elementos seleccionados */
+  font-weight: bold;
 }

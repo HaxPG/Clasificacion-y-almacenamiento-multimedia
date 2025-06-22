@@ -1,6 +1,6 @@
 // src/app/features/dashboard/components/file-upload/file-upload.component.ts
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormControl } from '@angular/forms';
 import { FileService } from '../../../../core/services/file';
 import { CategoryService } from '../../../../core/services/category';
 import { TagService } from '../../../../core/services/tag';
@@ -12,7 +12,7 @@ import { Collection } from '../../../../shared/models/collection';
 import { Section } from '../../../../shared/models/section';
 import { forkJoin, Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { HttpEventType, HttpResponse } from '@angular/common/http'; // Importar para manejar el progreso
+import { HttpEventType, HttpResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-file-upload',
@@ -26,7 +26,7 @@ export class FileUploadComponent implements OnInit {
   selectedFile: File | null = null;
   errorMessage: string = '';
   successMessage: string = '';
-  uploadProgress: number = 0; // Para mostrar el progreso
+  uploadProgress: number = 0;
 
   categories: Category[] = [];
   tags: Tag[] = [];
@@ -44,16 +44,18 @@ export class FileUploadComponent implements OnInit {
 
   ngOnInit(): void {
     this.fileUploadForm = this.fb.group({
+      // NUEVO CAMPO: Título del archivo
+      titulo_archivo: ['', Validators.required],
       tipo: ['documento', Validators.required],
       fuente: [''],
       lugar_captura: [''],
-      fecha_captura: [''], // Formato 'yyyy-MM-dd' para input type="date"
+      fecha_captura: [''],
       derechos_uso: [''],
       nivel_acceso: ['público', Validators.required],
-      id_categoria: [null], // Puede ser opcional, por eso [null]
-      tags: [[]], // Array de IDs de tags (se seleccionan múltiples)
-      colecciones: [[]], // Array de IDs de colecciones (se seleccionan múltiples)
-      secciones: [[]], // Array de IDs de secciones (se seleccionan múltiples)
+      id_categoria: [null],
+      tags: this.fb.array([]),
+      colecciones: this.fb.array([]),
+      secciones: this.fb.array([]),
     });
 
     this.loadMetadata();
@@ -95,13 +97,33 @@ export class FileUploadComponent implements OnInit {
         detectedType = 'audio';
       }
       this.fileUploadForm.patchValue({ tipo: detectedType });
+
+      // Opcional: Sugerir el título del archivo desde el nombre del archivo seleccionado (sin extensión)
+      const fileNameWithoutExtension = this.selectedFile.name.split('.').slice(0, -1).join('.');
+      this.fileUploadForm.patchValue({ titulo_archivo: fileNameWithoutExtension });
+
     } else {
       this.selectedFile = null;
+      this.fileUploadForm.patchValue({ titulo_archivo: '' }); // Limpiar si no hay archivo
     }
     // Reiniciar mensajes de estado
     this.errorMessage = '';
     this.successMessage = '';
     this.uploadProgress = 0;
+  }
+
+  onCheckboxChange(id: number, formArrayName: 'tags' | 'colecciones' | 'secciones', event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    const formArray = this.fileUploadForm.get(formArrayName) as FormArray;
+
+    if (checked) {
+      formArray.push(this.fb.control(id));
+    } else {
+      const index = formArray.controls.findIndex(control => control.value === id);
+      if (index !== -1) {
+        formArray.removeAt(index);
+      }
+    }
   }
 
   onSubmit(): void {
@@ -111,21 +133,23 @@ export class FileUploadComponent implements OnInit {
       this.uploadProgress = 0;
 
       const formData = new FormData();
-      // ¡¡CORRECCIÓN AQUÍ!! Cambia 'file' por 'archivo' para que coincida con Multer en el backend
       formData.append('archivo', this.selectedFile, this.selectedFile.name);
 
       Object.keys(this.fileUploadForm.value).forEach(key => {
         const value = this.fileUploadForm.get(key)?.value;
         if (key !== 'archivo' && value !== null && value !== undefined) {
-          // Si el valor es un array (para tags, colecciones, secciones), lo convertimos a JSON string
-          // para enviarlo como un único string al backend.
-          // Tu backend deberá parsear estos strings JSON de vuelta a arrays.
           if (Array.isArray(value)) {
-            // Es crucial que el backend maneje estos arrays como JSON strings,
-            // o que la lógica en el backend se adapte a cómo Multer parsea múltiples valores
-            // de un mismo campo (ej. formData.append('tags', tag1); formData.append('tags', tag2);)
-            // Si el backend espera un array de IDs, envíalo como un string JSON
-            formData.append(key, JSON.stringify(value));
+            // Para 'tags', queremos enviar los NOMBRES de los tags al backend, no los IDs
+            if (key === 'tags') {
+              const selectedTagIds = value as number[];
+              const selectedTagNames = this.tags
+                .filter(tag => selectedTagIds.includes(tag.id_tag))
+                .map(tag => tag.nombre);
+              formData.append(key, JSON.stringify(selectedTagNames)); // Enviar NOMBRES como JSON string
+            } else {
+              // Para 'colecciones' y 'secciones', seguimos enviando los IDs si el backend los espera
+              formData.append(key, JSON.stringify(value)); // Enviar IDs como JSON string
+            }
           } else {
             formData.append(key, value);
           }
@@ -161,6 +185,7 @@ export class FileUploadComponent implements OnInit {
 
   resetForm(): void {
     this.fileUploadForm.reset({
+      titulo_archivo: '', // Restablecer el nuevo campo
       tipo: 'documento',
       fuente: '',
       lugar_captura: '',
@@ -168,10 +193,12 @@ export class FileUploadComponent implements OnInit {
       derechos_uso: '',
       nivel_acceso: 'público',
       id_categoria: null,
-      tags: [],
-      colecciones: [],
-      secciones: [],
     });
+    // Limpiar FormArray manualmente
+    (this.fileUploadForm.get('tags') as FormArray).clear();
+    (this.fileUploadForm.get('colecciones') as FormArray).clear();
+    (this.fileUploadForm.get('secciones') as FormArray).clear();
+
     this.selectedFile = null;
     const fileInput = document.getElementById('archivo') as HTMLInputElement;
     if (fileInput) {

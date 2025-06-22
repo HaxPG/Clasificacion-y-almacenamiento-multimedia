@@ -3,6 +3,7 @@
 export interface File {
   id_archivo: number;
   nombre_archivo: string; // Nombre original del archivo
+  titulo_archivo?: string; // <--- AÑADE ESTA LÍNEA
   tipo: string;
   ruta_storage: string; // Ruta relativa al directorio de subidas (ej. 'uploads/imagen-123.png')
   miniaturta?: string; // Si tu backend genera miniaturas
@@ -16,13 +17,11 @@ export interface File {
   id_categoria?: number;
   categoria_nombre?: string; // JOIN en el backend
   usuario_nombre?: string; // JOIN en el backend
-  tags?: string;
-  colecciones?: string;
-  secciones?: string;
+  tags?: string; // Nota: Si tu backend devuelve un array de strings, esto debería ser `string[]`
+  colecciones?: string; // Nota: Si tu backend devuelve un array de IDs, esto debería ser `number[]`
+  secciones?: string; // Nota: Si tu backend devuelve un array de IDs, esto debería ser `number[]`
   downloads?: number;
-
-  // 👇 NUEVA PROPIEDAD para visualizaciones
-  views?: number;
+  views?: number; // Propiedad para visualizaciones
 }
 
 export interface Pagination {

@@ -3,7 +3,6 @@
 
   <form [formGroup]="fileUploadForm" (ngSubmit)="onSubmit()">
 
-    <!-- INPUT DE ARCHIVO -->
     <div class="form-section file-input-section">
       <div class="form-group">
         <label for="archivo"><i class="fas fa-file-upload"></i> Seleccionar Archivo:</label>
@@ -13,9 +12,16 @@
           Archivo es requerido.
         </div>
       </div>
+
+      <div class="form-group">
+        <label for="titulo_archivo">Título del Archivo:</label>
+        <input type="text" id="titulo_archivo" formControlName="titulo_archivo" placeholder="Ej: Foto de manifestación en Plaza Italia" />
+        <div *ngIf="fileUploadForm.get('titulo_archivo')?.errors?.['required'] && fileUploadForm.get('titulo_archivo')?.touched" class="error-message">
+          El título del archivo es requerido.
+        </div>
+      </div>
     </div>
 
-    <!-- METADATOS -->
     <div class="form-section">
       <h3><i class="fas fa-info-circle"></i> Metadatos del Archivo</h3>
 
@@ -66,28 +72,52 @@
         <textarea id="derechos_uso" formControlName="derechos_uso" placeholder="Descripción de los derechos de uso"></textarea>
       </div>
 
-      <div class="form-group">
-        <label for="tags">Tags:</label>
-        <select id="tags" formControlName="tags" multiple>
-          <option *ngFor="let tag of tags" [ngValue]="tag.id_tag">{{ tag.nombre }}</option>
-        </select>
-        <small>Usa Ctrl o Cmd para seleccionar múltiples opciones</small>
+      <div class="form-group checkbox-group">
+        <label>Tags:</label>
+        <div class="checkbox-container">
+          <div *ngFor="let tag of tags" class="checkbox-item">
+            <input
+              type="checkbox"
+              id="tag-{{ tag.id_tag }}"
+              [value]="tag.id_tag"
+              (change)="onCheckboxChange(tag.id_tag, 'tags', $event)"
+              [checked]="fileUploadForm.get('tags')?.value?.includes(tag.id_tag)"
+            />
+            <label for="tag-{{ tag.id_tag }}">{{ tag.nombre }}</label>
+          </div>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label for="colecciones">Colecciones:</label>
-        <select id="colecciones" formControlName="colecciones" multiple>
-          <option *ngFor="let col of collections" [ngValue]="col.id_coleccion">{{ col.nombre }}</option>
-        </select>
-        <small>Usa Ctrl o Cmd para seleccionar múltiples opciones</small>
+      <div class="form-group checkbox-group">
+        <label>Colecciones:</label>
+        <div class="checkbox-container">
+          <div *ngFor="let col of collections" class="checkbox-item">
+            <input
+              type="checkbox"
+              id="col-{{ col.id_coleccion }}"
+              [value]="col.id_coleccion"
+              (change)="onCheckboxChange(col.id_coleccion, 'colecciones', $event)"
+              [checked]="fileUploadForm.get('colecciones')?.value?.includes(col.id_coleccion)"
+            />
+            <label for="col-{{ col.id_coleccion }}">{{ col.nombre }}</label>
+          </div>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label for="secciones">Secciones de Periódico:</label>
-        <select id="secciones" formControlName="secciones" multiple>
-          <option *ngFor="let sec of sections" [ngValue]="sec.id_seccion">{{ sec.nombre }}</option>
-        </select>
-        <small>Usa Ctrl o Cmd para seleccionar múltiples opciones</small>
+      <div class="form-group checkbox-group">
+        <label>Secciones de Periódico:</label>
+        <div class="checkbox-container">
+          <div *ngFor="let sec of sections" class="checkbox-item">
+            <input
+              type="checkbox"
+              id="sec-{{ sec.id_seccion }}"
+              [value]="sec.id_seccion"
+              (change)="onCheckboxChange(sec.id_seccion, 'secciones', $event)"
+              [checked]="fileUploadForm.get('secciones')?.value?.includes(sec.id_seccion)"
+            />
+            <label for="sec-{{ sec.id_seccion }}">{{ sec.nombre }}</label>
+          </div>
+        </div>
       </div>
     </div>
 

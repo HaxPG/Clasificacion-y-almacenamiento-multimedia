@@ -1,7 +1,6 @@
 <div class="file-list-container">
   <h2>Gestión de Archivos Multimedia</h2>
 
-  <!-- Filtros -->
   <div class="filters-section">
     <input
       type="text"
@@ -29,9 +28,8 @@
     <button (click)="resetFilters()">Reiniciar filtros</button>
   </div>
 
-  <!-- Contenido -->
   <ng-container *ngIf="(archivos$ | async) as data; else loadingOrEmpty">
-    <div *ngIf="data.archivos.length > 0; else noFiles">
+    <div *ngIf="data.archivos && data.archivos.length > 0; else noFiles">
       <div class="file-grid">
         <div
           class="file-card"
@@ -46,7 +44,7 @@
             <div *ngSwitchDefault class="file-icon"><i class="fas fa-file fa-3x"></i></div>
           </ng-container>
 
-          <div class="file-name">{{ archivo.nombre_archivo }}</div>
+          <div class="file-name">{{ archivo.titulo_archivo || archivo.nombre_archivo }}</div>
 
           <div class="file-badges">
             <span class="badge tipo">
@@ -72,7 +70,18 @@
         </div>
       </div>
 
-      <!-- Modal -->
+      <div class="pagination-controls" *ngIf="data.pagination && data.pagination.pages > 1">
+        <button (click)="goToPage(data.pagination.page - 1)" [disabled]="data.pagination.page === 1">Anterior</button>
+        <button
+          *ngFor="let page of getPagesArray(data.pagination.page, data.pagination.pages)"
+          [class.active]="page === data.pagination.page"
+          (click)="goToPage(page)"
+        >
+          {{ page }}
+        </button>
+        <button (click)="goToPage(data.pagination.page + 1)" [disabled]="data.pagination.page === data.pagination.pages">Siguiente</button>
+      </div>
+
       <div class="modal-backdrop" *ngIf="archivoSeleccionado">
         <div class="modal-content">
           <button class="modal-close" (click)="cerrarModal()">×</button>
@@ -88,8 +97,8 @@
             controls
           ></video>
           <div class="modal-info">
-            <h3>{{ archivoSeleccionado.nombre_archivo }}</h3>
-            <p><strong>Tipo:</strong> {{ archivoSeleccionado.tipo }}</p>
+            <h3>{{ archivoSeleccionado.titulo_archivo || archivoSeleccionado.nombre_archivo }}</h3>
+            <p><strong>Nombre Original:</strong> {{ archivoSeleccionado.nombre_archivo }}</p> <p><strong>Tipo:</strong> {{ archivoSeleccionado.tipo }}</p>
             <p><strong>Categoría:</strong> {{ archivoSeleccionado.categoria_nombre || 'N/A' }}</p>
             <p><strong>Acceso:</strong> {{ archivoSeleccionado.nivel_acceso }}</p>
             <p><strong>Fuente:</strong> {{ archivoSeleccionado.fuente || 'N/A' }}</p>
@@ -105,11 +114,13 @@
     </div>
 
     <ng-template #noFiles>
-      <div class="no-files-message">No se encontraron archivos con las etiquetas buscadas.</div>
+      <div class="no-files-message">No se encontraron archivos con los criterios de búsqueda.</div>
     </ng-template>
   </ng-container>
 
   <ng-template #loadingOrEmpty>
-    <div class="loading-spinner">Cargando archivos...</div>
+    <div class="loading-spinner" *ngIf="isLoading">Cargando archivos...</div>
+    <div class="no-files-message" *ngIf="!isLoading && !error">No hay archivos para mostrar.</div>
+    <div class="error-message" *ngIf="error">{{ error }}</div>
   </ng-template>
 </div>
