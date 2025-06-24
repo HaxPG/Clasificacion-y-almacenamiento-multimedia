@@ -4,16 +4,26 @@ import { Observable } from 'rxjs';
 import { AuthService } from './auth';
 import { inject } from '@angular/core';
 
-export const tokenInterceptor: HttpInterceptorFn = (request: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
-  const authService = inject(AuthService); // Inyectamos AuthService
-  const token = authService.getToken();
+/**
+ * Interceptor que añade el token JWT al encabezado Authorization de cada solicitud HTTP saliente,
+ * si el usuario está autenticado. Utiliza la función inject() para acceder al AuthService.
+ */
+export const tokenInterceptor: HttpInterceptorFn = (
+  request: HttpRequest<unknown>,
+  next: HttpHandlerFn
+): Observable<HttpEvent<unknown>> => {
+  const authService = inject(AuthService); // Accede dinámicamente al servicio de autenticación
+  const token = authService.getToken(); // Recupera el token desde localStorage (si está disponible)
 
   if (token) {
+    // Si existe token, se clona la solicitud y se agrega el encabezado Authorization
     request = request.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
       }
     });
   }
-  return next(request); // Usamos next(request) en lugar de next.handle(request)
+
+  // Se pasa la solicitud (original o modificada) al siguiente interceptor o manejador final
+  return next(request);
 };

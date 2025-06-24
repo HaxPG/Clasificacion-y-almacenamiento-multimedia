@@ -13,6 +13,15 @@ export class FileService {
 
   constructor(private http: HttpClient) {}
 
+  /**
+   * Obtiene archivos paginados desde el backend con filtros opcionales.
+   * @param page Página actual
+   * @param limit Cantidad de elementos por página
+   * @param tipo Tipo de archivo (opcional)
+   * @param id_categoria ID de la categoría (opcional)
+   * @param searchTerm Término de búsqueda (opcional)
+   * @param nivel_acceso Nivel de acceso del archivo (opcional)
+   */
   getFiles(
     page: number = 1,
     limit: number = 20,
@@ -33,6 +42,10 @@ export class FileService {
     return this.http.get<PaginatedFiles>(`${this.apiUrl}/archivos`, { params });
   }
 
+  /**
+   * Sube un archivo al backend utilizando FormData.
+   * Se configuran opciones para observar el progreso de carga.
+   */
   uploadFile(formData: FormData): Observable<HttpEvent<any>> {
     return this.http.post(`${this.apiUrl}/archivos`, formData, {
       reportProgress: true,
@@ -40,6 +53,12 @@ export class FileService {
     });
   }
 
+  /**
+   * Busca archivos utilizando un query string, con filtros opcionales por tipo y categoría.
+   * @param query Término de búsqueda
+   * @param tipo Tipo de archivo (opcional)
+   * @param id_categoria ID de categoría (opcional)
+   */
   searchFiles(query: string, tipo?: string, id_categoria?: number): Observable<AppFile[]> {
     let params = new HttpParams().set('q', query);
     if (tipo) params = params.append('tipo', tipo);
@@ -50,15 +69,26 @@ export class FileService {
     return this.http.get<AppFile[]>(`${this.apiUrl}/buscar`, { params });
   }
 
+  /**
+   * Obtiene estadísticas generales del sistema desde el backend.
+   */
   getStatistics(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/estadisticas`);
   }
 
+  /**
+   * Registra una descarga para un archivo específico.
+   * @param id ID del archivo descargado
+   */
   registrarDescarga(id: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/archivos/${id}/descarga`, {});
   }
 
-  // ✅ Renombrado para evitar colisión
+  /**
+   * Descarga un archivo como Blob, útil para archivos binarios.
+   * Incluye el token manualmente en el header por si el interceptor no aplica.
+   * @param filename Nombre del archivo
+   */
   descargarArchivoBlob(filename: string): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/descargar/${filename}`, {
       responseType: 'blob',

@@ -1,3 +1,4 @@
+/* ==== CONTENEDOR PRINCIPAL DEL DASHBOARD ==== */
 .dashboard-container {
   display: flex;
   height: 100vh;
@@ -5,21 +6,22 @@
   overflow: hidden;
 }
 
-/* SIDEBAR */
+/* ==== SIDEBAR (barra lateral izquierda) ==== */
 .sidebar {
-  width: 260px;
+  width: 260px; /* ancho fijo */
   min-width: 260px;
-  background-color: #111827;
-  color: #f9fafb;
+  background-color: #111827; /* tono oscuro */
+  color: #f9fafb; /* texto claro */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 24px 16px;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease; /* animación al colapsar */
   position: relative;
   z-index: 1000;
 }
 
+/* Sidebar colapsada: se oculta hacia la izquierda */
 .sidebar.collapsed {
   transform: translateX(-100%);
   position: absolute;
@@ -28,6 +30,7 @@
   height: 100vh;
 }
 
+/* Encabezado del sidebar con botón para cerrar */
 .sidebar-header {
   display: flex;
   justify-content: space-between;
@@ -49,6 +52,7 @@
   cursor: pointer;
 }
 
+/* Información del usuario */
 .user-info {
   font-size: 0.875rem;
   margin-bottom: 24px;
@@ -61,7 +65,7 @@
   color: #9ca3af;
 }
 
-/* NAV LINKS */
+/* ==== ENLACES DE NAVEGACIÓN ==== */
 .nav-links {
   display: flex;
   flex-direction: column;
@@ -82,20 +86,20 @@
 
 .nav-links a:hover {
   background-color: #1f2937;
-  color: #60a5fa;
+  color: #60a5fa; /* azul claro al pasar el mouse */
 }
 
 .nav-links a.active {
-  background-color: #1e40af;
+  background-color: #1e40af; /* azul más oscuro */
   color: #ffffff;
 }
 
-/* BOTÓN CERRAR SESIÓN */
+/* ==== BOTÓN CERRAR SESIÓN ==== */
 .logout-btn {
   margin-top: 32px;
   padding: 10px;
   background-color: transparent;
-  border: 1px solid #ef4444;
+  border: 1px solid #ef4444; /* rojo */
   color: #ef4444;
   border-radius: 8px;
   cursor: pointer;
@@ -112,7 +116,7 @@
   color: white;
 }
 
-/* CONTENIDO PRINCIPAL */
+/* ==== CONTENIDO PRINCIPAL ==== */
 .content {
   flex-grow: 1;
   padding: 24px;
@@ -120,7 +124,7 @@
   background-color: #f9fafb;
 }
 
-/* BOTÓN FLOTANTE PARA MÓVILES */
+/* ==== BOTÓN FLOTANTE PARA MÓVILES ==== */
 .floating-toggle-btn {
   position: fixed;
   top: 16px;
@@ -136,10 +140,10 @@
   cursor: pointer;
 }
 
-/* RESPONSIVE */
+/* ==== ESTILOS RESPONSIVOS PARA PANTALLAS PEQUEÑAS ==== */
 @media (max-width: 768px) {
   .dashboard-container {
-    flex-direction: column;
+    flex-direction: column; /* apila verticalmente */
   }
 
   .sidebar {
@@ -147,7 +151,7 @@
     top: 0;
     left: 0;
     height: 100%;
-    transform: translateX(0);
+    transform: translateX(0); /* visible por defecto */
   }
 
   .sidebar.collapsed {
@@ -156,7 +160,7 @@
 
   .content {
     margin-top: 0;
-    padding-top: 60px;
+    padding-top: 60px; /* espacio para botón flotante */
   }
 
   .floating-toggle-btn {

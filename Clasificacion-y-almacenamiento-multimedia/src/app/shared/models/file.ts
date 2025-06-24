@@ -2,36 +2,36 @@
 
 export interface File {
   id_archivo: number;
-  nombre_archivo: string; // Nombre original del archivo
-  titulo_archivo?: string; // <--- AÑADE ESTA LÍNEA
+  nombre_archivo: string;
+  titulo_archivo?: string;
   tipo: string;
-  ruta_storage: string; // Ruta relativa al directorio de subidas (ej. 'uploads/imagen-123.png')
-  miniaturta?: string; // Si tu backend genera miniaturas
-  fecha_subida: string; // ISO 8601 string
+  ruta_storage: string;
+  miniaturta?: string;
+  fecha_subida: string;
   fuente?: string;
   lugar_captura?: string;
-  fecha_captura?: string; // ISO 8601 string o Date string
+  fecha_captura?: string;
   derechos_uso?: string;
   nivel_acceso: 'público' | 'restringido' | 'privado';
   id_usuario: number;
   id_categoria?: number;
-  categoria_nombre?: string; // JOIN en el backend
-  usuario_nombre?: string; // JOIN en el backend
-  tags?: string; // Nota: Si tu backend devuelve un array de strings, esto debería ser `string[]`
-  colecciones?: string; // Nota: Si tu backend devuelve un array de IDs, esto debería ser `number[]`
-  secciones?: string; // Nota: Si tu backend devuelve un array de IDs, esto debería ser `number[]`
+  categoria_nombre?: string;
+  usuario_nombre?: string;
+  tags?: string;
+  colecciones?: string;
+  secciones?: string;
   downloads?: number;
-  views?: number; // Propiedad para visualizaciones
-}
+  views?: number;
+} // Representa un archivo subido con metadatos opcionales, relaciones y estadísticas
 
 export interface Pagination {
   page: number;
   limit: number;
   total: number;
   pages: number;
-}
+} // Estructura para manejar datos de paginación
 
 export interface PaginatedFiles {
   archivos: File[];
   pagination: Pagination;
-}
+} // Agrupa archivos paginados junto a su información de navegación

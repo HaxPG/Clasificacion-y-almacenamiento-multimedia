@@ -1,3 +1,4 @@
+/* Estilo general de la barra lateral */
 .sidebar {
   width: 260px;
   height: 100vh;
@@ -11,6 +12,7 @@
   box-shadow: 2px 0 5px rgba(120, 144, 211, 0.05);
 }
 
+/* Encabezado principal de la barra lateral */
 .sidebar .header h1 {
   font-size: 1.4rem;
   font-weight: bold;
@@ -18,33 +20,39 @@
   color: #7da0d1;
 }
 
+/* Parte resaltada del título */
 .sidebar .header h1 span {
   display: block;
   font-weight: 700;
   color: #4f46e5;
 }
 
+/* Subtítulo del encabezado */
 .sidebar .header p {
   margin-top: 8px;
   font-size: 0.875rem;
   color: #374151;
 }
 
+/* Texto pequeño debajo del encabezado */
 .sidebar .header small {
   font-size: 0.75rem;
   color: #6b7280;
 }
 
+/* Lista de navegación principal */
 .sidebar nav ul {
   list-style: none;
   padding: 0;
   margin-top: 24px;
 }
 
+/* Separación entre elementos de la lista */
 .sidebar nav li {
   margin-bottom: 12px;
 }
 
+/* Estilo de los enlaces de navegación */
 .sidebar nav a {
   display: flex;
   align-items: center;
@@ -56,20 +64,24 @@
   transition: 0.2s ease background;
 }
 
+/* Enlace activo (seleccionado) */
 .sidebar nav a.active {
   background-color: #eef2ff;
   color: #4f46e5;
   font-weight: 600;
 }
 
+/* Efecto hover sobre los enlaces */
 .sidebar nav a:hover {
   background-color: #f3f4f6;
 }
 
+/* Contenedor inferior de la barra lateral (botón de salir, por ejemplo) */
 .sidebar .bottom {
   margin-top: 24px;
 }
 
+/* Botón de cerrar sesión o acción inferior */
 .sidebar .bottom button {
   width: 100%;
   padding: 10px 0;
@@ -86,6 +98,7 @@
   gap: 8px;
 }
 
+/* Efecto hover sobre el botón inferior */
 .sidebar .bottom button:hover {
   background-color: #fee2e2;
 }

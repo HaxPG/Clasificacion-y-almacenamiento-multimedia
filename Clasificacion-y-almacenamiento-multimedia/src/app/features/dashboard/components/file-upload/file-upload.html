@@ -1,13 +1,18 @@
+<!-- Contenedor principal con estilos aplicados -->
 <div class="file-upload-card">
   <h2><i class="fas fa-upload"></i> Subir Nuevo Archivo Multimedia</h2>
 
+  <!-- Formulario reactivo con vinculación al FormGroup en el componente TS -->
   <form [formGroup]="fileUploadForm" (ngSubmit)="onSubmit()">
 
+    <!-- Sección para seleccionar archivo y definir título -->
     <div class="form-section file-input-section">
       <div class="form-group">
         <label for="archivo"><i class="fas fa-file-upload"></i> Seleccionar Archivo:</label>
         <input type="file" id="archivo" (change)="onFileSelected($event)" />
+        <!-- Nombre del archivo seleccionado -->
         <span class="file-name" *ngIf="selectedFile">{{ selectedFile.name }}</span>
+        <!-- Validación visual si no se selecciona archivo -->
         <div *ngIf="fileUploadForm.get('archivo')?.errors?.['required'] && fileUploadForm.get('archivo')?.touched" class="error-message">
           Archivo es requerido.
         </div>
@@ -22,6 +27,7 @@
       </div>
     </div>
 
+    <!-- Sección de metadatos: tipo, categoría, acceso, etc. -->
     <div class="form-section">
       <h3><i class="fas fa-info-circle"></i> Metadatos del Archivo</h3>
 
@@ -72,6 +78,7 @@
         <textarea id="derechos_uso" formControlName="derechos_uso" placeholder="Descripción de los derechos de uso"></textarea>
       </div>
 
+      <!-- Checkboxes para Tags -->
       <div class="form-group checkbox-group">
         <label>Tags:</label>
         <div class="checkbox-container">
@@ -88,6 +95,7 @@
         </div>
       </div>
 
+      <!-- Checkboxes para Colecciones -->
       <div class="form-group checkbox-group">
         <label>Colecciones:</label>
         <div class="checkbox-container">
@@ -104,6 +112,7 @@
         </div>
       </div>
 
+      <!-- Checkboxes para Secciones -->
       <div class="form-group checkbox-group">
         <label>Secciones de Periódico:</label>
         <div class="checkbox-container">
@@ -121,11 +130,13 @@
       </div>
     </div>
 
+    <!-- Botón de envío con validación de formulario y archivo -->
     <button type="submit" [disabled]="!fileUploadForm.valid || !selectedFile">
       <i class="fas fa-cloud-upload-alt"></i> Subir Archivo
     </button>
   </form>
 
+  <!-- Mensajes de estado -->
   <div *ngIf="successMessage" class="alert success">{{ successMessage }}</div>
   <div *ngIf="errorMessage" class="alert error">{{ errorMessage }}</div>
 </div>

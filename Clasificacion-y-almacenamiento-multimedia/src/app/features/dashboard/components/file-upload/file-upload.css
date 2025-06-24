@@ -1,5 +1,6 @@
 /* src/app/features/dashboard/components/file-upload/file-upload.css */
 
+/* Contenedor principal del formulario de carga */
 .file-upload-card {
   background-color: #fefefe;
   border-radius: 12px;
@@ -21,6 +22,7 @@
   padding-bottom: 10px;
 }
 
+/* Sección interna con borde y fondo para agrupar campos */
 .form-section {
   margin-bottom: 35px;
   padding: 25px;
@@ -38,6 +40,7 @@
   padding-bottom: 10px;
 }
 
+/* Estilo base para cada grupo de formulario */
 .form-group {
   margin-bottom: 22px;
   display: flex;
@@ -79,11 +82,7 @@
   min-height: 100px;
 }
 
-/* Esta regla ya no es necesaria si se reemplaza select[multiple] por checkboxes */
-/* .form-group select[multiple] {
-  min-height: 130px;
-} */
-
+/* Estilo del campo de carga de archivo */
 .file-input-section input[type="file"] {
   padding: 10px;
   border: 2px dashed #a5b4fc;
@@ -93,6 +92,7 @@
   border-radius: 8px;
 }
 
+/* Texto con nombre del archivo cargado */
 .file-name {
   margin-top: 10px;
   font-style: italic;
@@ -101,6 +101,7 @@
   word-break: break-word;
 }
 
+/* Botón de envío del formulario */
 button[type="submit"] {
   display: inline-flex;
   align-items: center;
@@ -129,6 +130,7 @@ button[type="submit"]:disabled {
   opacity: 0.6;
 }
 
+/* Alertas de éxito y error */
 .alert {
   padding: 16px;
   margin-top: 25px;
@@ -151,19 +153,14 @@ button[type="submit"]:disabled {
   border-color: #fecaca;
 }
 
+/* Mensaje de error debajo de cada campo */
 .error-message {
   color: #dc2626;
   font-size: 0.9em;
   margin-top: 6px;
 }
 
-/* Esta regla ya no es necesaria si se elimina el mensaje de "Ctrl o Cmd" */
-/* small {
-  color: #6b7280;
-  font-size: 0.85em;
-  margin-top: 4px;
-} */
-
+/* Diseño responsivo para pantallas pequeñas */
 @media (max-width: 768px) {
   .file-upload-card {
     padding: 25px;
@@ -183,7 +180,7 @@ button[type="submit"]:disabled {
   }
 }
 
-/* --- ESTILOS AGREGADOS PARA CHECKBOXES DE SELECCIÓN MÚLTIPLE --- */
+/* Estilos personalizados para checkbox múltiples */
 .checkbox-group {
   border: 1px solid #ddd;
   border-radius: 5px;
@@ -192,35 +189,34 @@ button[type="submit"]:disabled {
 }
 
 .checkbox-group label {
-  margin-bottom: 10px; /* Separación del título del grupo */
+  margin-bottom: 10px;
   color: #333;
 }
 
 .checkbox-container {
   display: flex;
-  flex-wrap: wrap; /* Permite que los elementos pasen a la siguiente línea en pantallas pequeñas */
-  gap: 10px; /* Espacio entre los checkboxes */
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .checkbox-item {
   display: flex;
   align-items: center;
-  white-space: nowrap; /* Evita que el texto del label se rompa */
+  white-space: nowrap;
 }
 
 .checkbox-item input[type="checkbox"] {
   margin-right: 5px;
-  /* Puedes personalizar el tamaño si quieres */
   transform: scale(1.1);
 }
 
 .checkbox-item label {
-  font-weight: normal; /* Para que el label individual no sea negrita */
+  font-weight: normal;
   cursor: pointer;
-  margin-bottom: 0; /* Anula el margin-bottom del label del form-group */
+  margin-bottom: 0;
 }
 
 .checkbox-item input[type="checkbox"]:checked + label {
-  color: #007bff; /* Color para los elementos seleccionados */
+  color: #007bff;
   font-weight: bold;
 }

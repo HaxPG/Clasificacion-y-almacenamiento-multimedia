@@ -1,11 +1,16 @@
+<!-- Contenedor principal de la tarjeta de gestión de usuarios -->
 <div class="user-list-card">
+  
+  <!-- Barra de encabezado con título y botón para agregar usuario -->
   <div class="header-bar">
     <h2>Gestión de Usuarios</h2>
     <button class="add-user-btn" (click)="agregarUsuario()">+ Agregar Usuario</button>
   </div>
 
+  <!-- Mensaje de error si ocurre algún problema -->
   <div *ngIf="errorMessage" class="alert-error">{{ errorMessage }}</div>
 
+  <!-- Tabla de usuarios, cargada de forma reactiva desde users$ -->
   <ng-container *ngIf="users$ | async as users; else loadingUsers">
     <table class="user-table">
       <thead>
@@ -18,12 +23,14 @@
         </tr>
       </thead>
       <tbody>
+        <!-- Iteración por cada usuario del observable -->
         <tr *ngFor="let user of users">
           <td>{{ user.id }}</td>
           <td>{{ user.nombre }}</td>
           <td>{{ user.correo }}</td>
           <td>{{ user.rol }}</td>
           <td>
+            <!-- Botones de acción: editar y eliminar -->
             <button class="action-btn edit" (click)="editarUsuario(user)">✏️</button>
             <button class="action-btn delete" (click)="eliminarUsuario(user.id)">🗑️</button>
           </td>
@@ -32,6 +39,7 @@
     </table>
   </ng-container>
 
+  <!-- Plantilla alternativa que se muestra mientras se cargan los usuarios -->
   <ng-template #loadingUsers>
     <div class="loading-message">Cargando usuarios...</div>
   </ng-template>

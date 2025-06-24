@@ -1,40 +1,45 @@
+/* Contenedor principal del formulario de subida de archivos */
 .upload-container {
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 24px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  font-family: 'Segoe UI', sans-serif;
+  max-width: 600px; 
+  margin: 40px auto; 
+  padding: 24px; 
+  background: white; 
+  border-radius: 12px; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+  font-family: 'Segoe UI', sans-serif; 
 }
 
+/* Estilo general para etiquetas de formulario */
 .upload-container label {
-  display: block;
-  margin-top: 16px;
-  font-weight: 600;
+  display: block; 
+  margin-top: 16px; 
+  font-weight: 600; 
 }
 
+/* Estilos para campos de entrada y select */
 .upload-container input,
 .upload-container select {
-  width: 100%;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  margin-top: 6px;
+  width: 100%; 
+  padding: 10px; 
+  border-radius: 8px; 
+  border: 1px solid #ccc; 
+  margin-top: 6px; 
 }
 
+/* Estilo para el botón de envío */
 .upload-container button {
-  margin-top: 20px;
-  padding: 10px 24px;
-  background: #7c3aed;
-  color: white;
-  font-weight: bold;
-  border: none;
-  border-radius: 9999px;
-  cursor: pointer;
+  margin-top: 20px; 
+  padding: 10px 24px; 
+  background: #7c3aed; 
+  color: white; 
+  font-weight: bold; 
+  border: none; 
+  border-radius: 9999px; 
+  cursor: pointer; 
 }
 
+/* Estilo para el botón cuando está deshabilitado */
 .upload-container button:disabled {
-  background-color: #bbb;
-  cursor: not-allowed;
+  background-color: #bbb; 
+  cursor: not-allowed; 
 }

@@ -1,3 +1,4 @@
+/* Contenedor principal de la tarjeta de listado de usuarios */
 .user-list-card {
   background: #ffffff;
   border-radius: 12px;
@@ -8,6 +9,7 @@
   font-family: 'Segoe UI', sans-serif;
 }
 
+/* Barra superior con título y botón de acción */
 .header-bar {
   display: flex;
   justify-content: space-between;
@@ -15,12 +17,14 @@
   margin-bottom: 24px;
 }
 
+/* Título dentro de la barra */
 .header-bar h2 {
   font-size: 1.7rem;
   color: #1f2937;
   margin: 0;
 }
 
+/* Botón para agregar nuevo usuario */
 .add-user-btn {
   padding: 10px 18px;
   background-color: #3b82f6;
@@ -36,6 +40,7 @@
   background-color: #2563eb;
 }
 
+/* Estilo general de la tabla de usuarios */
 .user-table {
   width: 100%;
   border-collapse: collapse;
@@ -43,6 +48,7 @@
   color: #374151;
 }
 
+/* Celdas de cabecera y contenido de la tabla */
 .user-table th,
 .user-table td {
   padding: 12px 16px;
@@ -50,10 +56,12 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
+/* Fondo para la cabecera de la tabla */
 .user-table thead {
   background-color: #f3f4f6;
 }
 
+/* Estilo base para botones de acción (editar, eliminar) */
 .action-btn {
   border: none;
   padding: 6px 10px;
@@ -63,6 +71,7 @@
   font-size: 0.95rem;
 }
 
+/* Botón de editar */
 .action-btn.edit {
   background-color: #facc15;
   color: #1f2937;
@@ -72,6 +81,7 @@
   background-color: #eab308;
 }
 
+/* Botón de eliminar */
 .action-btn.delete {
   background-color: #ef4444;
   color: white;
@@ -81,6 +91,7 @@
   background-color: #dc2626;
 }
 
+/* Mensaje de error al fallar una acción */
 .alert-error {
   color: #b91c1c;
   background-color: #fee2e2;
@@ -90,6 +101,7 @@
   text-align: center;
 }
 
+/* Estilo para texto de carga o estados intermedios */
 .loading-message {
   text-align: center;
   padding: 20px;

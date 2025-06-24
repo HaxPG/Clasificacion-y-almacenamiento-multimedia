@@ -5,18 +5,16 @@ import { isPlatformBrowser } from '@angular/common';
 import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { User } from '../../shared/models/user'; // Asegúrate de que la ruta sea correcta
+import { User } from '../../shared/models/user';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  // CORRECCIÓN CLAVE: authBaseUrl debe ser `${environment.apiUrl}/auth`
-  // Si environment.apiUrl es 'http://localhost:3000/api', entonces
-  // authBaseUrl será 'http://localhost:3000/api/auth'.
-  // Las peticiones a /login y /register se dirigirán a /api/auth/login y /api/auth/register.
+  // URL base para las peticiones de autenticación
   private authBaseUrl = `${environment.apiUrl}/auth`;
 
+  // Sujeto reactivo que mantiene el usuario actual en memoria
   private userSubject = new BehaviorSubject<User | null>(null);
   public user$ = this.userSubject.asObservable();
 
@@ -24,9 +22,13 @@ export class AuthService {
     private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
-    this.loadCurrentUser();
+    this.loadCurrentUser(); // Intenta cargar el usuario desde localStorage si está en el navegador
   }
 
+  /**
+   * Carga el usuario desde el localStorage si está disponible (solo en navegador).
+   * Si hay errores de parseo, limpia los datos inválidos.
+   */
   private loadCurrentUser(): void {
     if (isPlatformBrowser(this.platformId)) {
       const userString = localStorage.getItem('currentUser');
@@ -36,15 +38,18 @@ export class AuthService {
           this.userSubject.next(user);
         } catch (e) {
           console.error("Error parsing user from localStorage", e);
-          localStorage.removeItem('currentUser'); // Limpia datos corruptos
+          localStorage.removeItem('currentUser');
           localStorage.removeItem('jwtToken');
         }
       }
     }
   }
 
+  /**
+   * Inicia sesión con las credenciales proporcionadas.
+   * Guarda el token y el usuario en localStorage, y actualiza el estado global.
+   */
   login(credentials: { correo: string; contraseña: string }): Observable<{ token: string; user: User }> {
-    // La URL de login ahora será: http://localhost:3000/api/auth/login (¡Correcto!)
     return this.http.post<{ token: string; user: User }>(`${this.authBaseUrl}/login`, credentials).pipe(
       tap(response => {
         if (isPlatformBrowser(this.platformId)) {
@@ -56,13 +61,15 @@ export class AuthService {
       }),
       catchError((error: HttpErrorResponse) => {
         console.error('Login failed', error);
+
         this.userSubject.next(null);
 
+        // Manejo detallado de errores para proporcionar feedback útil
         let errorMessage = 'Error desconocido al iniciar sesión.';
         if (error.status === 401) {
           errorMessage = 'Credenciales inválidas (correo o contraseña incorrectos).';
         } else if (error.status === 404) {
-          errorMessage = 'El servidor no encontró el endpoint de inicio de sesión. Revisa la URL.';
+          errorMessage = 'Endpoint de inicio de sesión no encontrado. Verifica la URL del backend.';
         } else if (error.error && error.error.message) {
           errorMessage = error.error.message;
         } else if (error.message) {
@@ -73,8 +80,11 @@ export class AuthService {
     );
   }
 
+  /**
+   * Registra un nuevo usuario con los datos proporcionados.
+   * No guarda el estado del usuario automáticamente.
+   */
   register(userData: { nombre: string; correo: string; contraseña: string; rol: string }): Observable<any> {
-    // La URL de registro ahora será: http://localhost:3000/api/auth/register (¡Correcto!)
     return this.http.post(`${this.authBaseUrl}/register`, userData).pipe(
       catchError((error: HttpErrorResponse) => {
         console.error('Registration failed', error);
@@ -87,6 +97,9 @@ export class AuthService {
     );
   }
 
+  /**
+   * Cierra sesión eliminando los datos del usuario y el token del localStorage.
+   */
   logout(): void {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem('jwtToken');
@@ -96,6 +109,9 @@ export class AuthService {
     console.log('User logged out.');
   }
 
+  /**
+   * Obtiene el token JWT almacenado en localStorage (si está en navegador).
+   */
   getToken(): string | null {
     if (isPlatformBrowser(this.platformId)) {
       return localStorage.getItem('jwtToken');
@@ -103,14 +119,23 @@ export class AuthService {
     return null;
   }
 
+  /**
+   * Verifica si el usuario está autenticado y tiene un token válido.
+   */
   isLoggedIn(): boolean {
     return !!this.getToken() && !!this.userSubject.value;
   }
 
+  /**
+   * Verifica si el usuario actual tiene el rol 'Administrador'.
+   */
   isAdmin(): boolean {
     return this.userSubject.value?.rol === 'Administrador';
   }
 
+  /**
+   * Verifica si el usuario actual tiene el rol 'Periodista'.
+   */
   isJournalist(): boolean {
     return this.userSubject.value?.rol === 'Periodista';
   }

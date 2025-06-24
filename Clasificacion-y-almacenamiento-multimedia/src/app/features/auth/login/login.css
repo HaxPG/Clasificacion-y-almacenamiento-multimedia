@@ -1,25 +1,26 @@
-/* Contenedor principal para centrar el formulario */
+/* Contenedor principal que centra vertical y horizontalmente el formulario de login */
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh; /* Asegura que ocupe al menos toda la altura de la vista */
-  background-color: #f0f2f5; /* Un gris muy claro, similar al fondo principal */
+  min-height: 100vh; /* Ocupar toda la altura de la pantalla */
+  background-color: #f0f2f5; /* Fondo gris claro */
   padding: 20px;
-  box-sizing: border-box; /* Incluye padding en el ancho total */
+  box-sizing: border-box;
 }
 
-/* Estilo de la tarjeta de login */
+/* Tarjeta que contiene el formulario de login */
 .login-card {
-  background-color: #ffffff; /* Fondo blanco */
+  background-color: #ffffff;
   padding: 40px;
-  border-radius: 12px; /* Bordes redondeados como tus tarjetas */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Sombra suave y elevada */
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 400px; /* Ancho máximo para el formulario */
-  text-align: center; /* Centrar el título */
+  max-width: 400px; /* Limita el ancho en pantallas grandes */
+  text-align: center;
 }
 
+/* Título del formulario */
 .login-title {
   font-size: 2em;
   color: #333;
@@ -27,10 +28,10 @@
   font-weight: 600;
 }
 
-/* Estilos para los grupos de formulario */
+/* Agrupaciones de inputs con sus etiquetas */
 .form-group {
   margin-bottom: 20px;
-  text-align: left; /* Alinear etiquetas a la izquierda */
+  text-align: left;
 }
 
 .form-group label {
@@ -40,58 +41,62 @@
   color: #555;
 }
 
+/* Estilos comunes para los inputs de tipo email y password */
 .form-group input[type="email"],
 .form-group input[type="password"] {
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 8px; /* Bordes redondeados para inputs */
+  border-radius: 8px;
   font-size: 1em;
-  box-sizing: border-box; /* Incluye padding en el ancho total */
+  box-sizing: border-box;
   transition: border-color 0.3s ease;
 }
 
+/* Efecto visual al enfocar los inputs */
 .form-group input[type="email"]:focus,
 .form-group input[type="password"]:focus {
-  border-color: #007bff; /* Color azul al enfocar */
+  border-color: #007bff;
   outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); /* Sombra suave de enfoque */
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
 }
 
-/* Mensajes de error */
+/* Mensajes de error debajo de los campos de entrada */
 .error-message {
-  color: #dc3545; /* Rojo para errores */
+  color: #dc3545;
   font-size: 0.85em;
   margin-top: 5px;
 }
 
-/* Botón de login */
+/* Botón principal para iniciar sesión */
 .login-button {
-  background-color: #007bff; /* Color azul, similar a tu barra lateral */
+  background-color: #007bff;
   color: white;
   padding: 12px 25px;
   border: none;
-  border-radius: 8px; /* Bordes redondeados para el botón */
+  border-radius: 8px;
   font-size: 1.1em;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  width: 100%; /* Ocupa todo el ancho disponible */
+  width: 100%;
   margin-top: 20px;
 }
 
+/* Estilo del botón al pasar el mouse */
 .login-button:hover {
-  background-color: #0056b3; /* Azul más oscuro al pasar el ratón */
+  background-color: #0056b3;
   box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
 }
 
+/* Estilo cuando el botón está deshabilitado */
 .login-button:disabled {
-  background-color: #a0c4ff; /* Azul más claro cuando está deshabilitado */
+  background-color: #a0c4ff;
   cursor: not-allowed;
   box-shadow: none;
 }
 
-/* Estilos para los mensajes de alerta (éxito/error) */
+/* Contenedor para mostrar mensajes de alerta (error, éxito, etc.) */
 .alert {
   padding: 10px 15px;
   border-radius: 8px;
@@ -100,6 +105,7 @@
   text-align: left;
 }
 
+/* Estilo específico para alertas de error */
 .alert.error {
   background-color: #f8d7da;
   color: #721c24;

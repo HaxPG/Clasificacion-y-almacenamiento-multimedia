@@ -1,7 +1,13 @@
+<!-- Contenedor principal centrado para el formulario de login -->
 <div class="login-container">
   <div class="login-card">
+    <!-- Título del formulario -->
     <h2 class="login-title">Iniciar Sesión</h2>
+
+    <!-- Formulario reactivo de Angular con validación y envío controlado -->
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+      <!-- Campo de correo electrónico con validación -->
       <div class="form-group">
         <label for="correo">Correo Electrónico:</label>
         <input
@@ -11,6 +17,7 @@
           placeholder="tu@email.com"
           required
         />
+        <!-- Mensajes de error para el campo de correo -->
         <div
           *ngIf="
             loginForm.get('correo')?.invalid &&
@@ -18,14 +25,16 @@
           "
           class="error-message"
         >
-          <span *ngIf="loginForm.get('correo')?.errors?.['required']"
-            >El correo es requerido.</span
-          >
-          <span *ngIf="loginForm.get('correo')?.errors?.['email']"
-            >Formato de correo inválido.</span
-          >
+          <span *ngIf="loginForm.get('correo')?.errors?.['required']">
+            El correo es requerido.
+          </span>
+          <span *ngIf="loginForm.get('correo')?.errors?.['email']">
+            Formato de correo inválido.
+          </span>
         </div>
       </div>
+
+      <!-- Campo de contraseña con validación -->
       <div class="form-group">
         <label for="contraseña">Contraseña:</label>
         <input
@@ -35,23 +44,27 @@
           placeholder="********"
           required
         />
+        <!-- Mensaje de error para el campo de contraseña -->
         <div
           *ngIf="
             loginForm.get('contraseña')?.invalid &&
-            (loginForm.get('contraseña')?.dirty ||
-              loginForm.get('contraseña')?.touched)
+            (loginForm.get('contraseña')?.dirty || loginForm.get('contraseña')?.touched)
           "
           class="error-message"
         >
-          <span *ngIf="loginForm.get('contraseña')?.errors?.['required']"
-            >La contraseña es requerida.</span
-          >
+          <span *ngIf="loginForm.get('contraseña')?.errors?.['required']">
+            La contraseña es requerida.
+          </span>
         </div>
       </div>
+
+      <!-- Botón de envío, deshabilitado si el formulario no es válido -->
       <button type="submit" [disabled]="!loginForm.valid" class="login-button">
         Iniciar Sesión
       </button>
     </form>
+
+    <!-- Alerta de error general (por ejemplo, credenciales inválidas) -->
     <div *ngIf="errorMessage" class="alert error">{{ errorMessage }}</div>
   </div>
 </div>
