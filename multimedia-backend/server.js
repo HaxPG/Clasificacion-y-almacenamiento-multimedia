@@ -642,10 +642,9 @@ app.get("/api/buscar", authenticateToken, async (req, res) => {
     }
 
     let query = `
-      SELECT DISTINCT a.*, c.nombre as categoria_nombre, u.nombre as usuario_nombre
+      SELECT DISTINCT a.*, c.nombre as categoria_nombre, t.nombre
       FROM archivos a
       LEFT JOIN categorias c ON a.id_categoria = c.id_categoria
-      LEFT JOIN usuarios u ON a.id_usuario = u.id_usuario
       LEFT JOIN archivo_tags at ON a.id_archivo = at.id_archivo
       LEFT JOIN tags t ON at.id_tag = t.id_tag
       WHERE (
