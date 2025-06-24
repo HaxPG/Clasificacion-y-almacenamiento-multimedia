@@ -6,20 +6,21 @@ import jwt from "jsonwebtoken"
 import bcrypt from "bcryptjs"
 import multer from "multer"
 import path from "path"
-import fs from "fs/promises"
+import fs from "fs/promises" // Importa la versión de promesas de fs
 import { fileURLToPath } from "url"
-// const { statSync } = require('fs'); // <--- Elimina o comenta esta línea si no la usas, ya que estás usando fs/promises
 
+// Cargar variables de entorno desde .env
 dotenv.config()
 
+// Obtener __filename y __dirname en módulos ES
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// Mueve la declaración de 'app' aquí, antes de cualquier 'app.use'
+// Inicializar la aplicación Express
 const app = express()
 const PORT = process.env.PORT || 3000
 
-// Middleware
+// --- Middleware Globales ---
 console.log('Ruta base del servidor (__dirname):', __dirname);
 const uploadsPath = path.join(__dirname, "uploads");
 console.log('Ruta de la carpeta uploads que se intenta servir:', uploadsPath);
@@ -30,11 +31,15 @@ app.use(
     credentials: true,
   }),
 )
+// Middleware para parsear JSON y URL-encoded bodies con límite de tamaño
 app.use(express.json({ limit: "50mb" }))
 app.use(express.urlencoded({ extended: true, limit: "50mb" }))
-app.use("/api/uploads", express.static(uploadsPath)); // Ahora los archivos estáticos también estarán bajo /api/uploads
 
-// Database connection
+// Middleware para servir archivos estáticos desde la carpeta 'uploads'
+// Esto permite acceder directamente a los archivos si se conoce la ruta completa (menos seguro para descargas controladas)
+app.use("/api/uploads", express.static(uploadsPath));
+
+// --- Configuración de la Base de Datos ---
 const dbConfig = {
   host: process.env.DB_HOST || "localhost",
   user: process.env.DB_USER || "root",
@@ -47,7 +52,7 @@ const dbConfig = {
 
 const pool = mysql.createPool(dbConfig)
 
-// Test database connection
+// Función para probar la conexión a la base de datos
 async function testConnection() {
   try {
     const connection = await pool.getConnection()
@@ -57,17 +62,16 @@ async function testConnection() {
     console.error("❌ Database connection failed:", error.message)
   }
 }
-
 testConnection()
 
-// Multer configuration for file uploads
+// --- Configuración de Multer para Subida de Archivos ---
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
     const uploadDir = path.join(__dirname, "uploads")
     try {
-      await fs.access(uploadDir)
+      await fs.access(uploadDir) // Verifica si el directorio existe
     } catch {
-      await fs.mkdir(uploadDir, { recursive: true })
+      await fs.mkdir(uploadDir, { recursive: true }) // Si no, lo crea
     }
     cb(null, uploadDir)
   },
@@ -80,25 +84,25 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 100 * 1024 * 1024, // 100MB limit
+    fileSize: 100 * 1024 * 1024, // Límite de 100MB por archivo
   },
-fileFilter: (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif|webp|mp4|avi|mov|mkv|pdf|doc|docx|txt|xlsx|pptx|mp3|wav/
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase())
-  const mimetype = allowedTypes.test(file.mimetype)
+  fileFilter: (req, file, cb) => {
+    // Expresión regular para tipos de archivo permitidos
+    const allowedTypes = /jpeg|jpg|png|gif|webp|mp4|avi|mov|mkv|pdf|doc|docx|txt|xlsx|pptx|mp3|wav/
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase())
+    const mimetype = allowedTypes.test(file.mimetype)
 
-  console.log("🧪 Archivo recibido:", file.originalname, "→", file.mimetype)
+    console.log("🧪 Archivo recibido para filtro:", file.originalname, "→", file.mimetype)
 
-  if (mimetype && extname) {
-    return cb(null, true)
-  } else {
-    cb(new Error("Tipo de archivo no permitido"))
-  }
-}
-,
+    if (mimetype && extname) {
+      return cb(null, true) // Aceptar el archivo
+    } else {
+      cb(new Error("Tipo de archivo no permitido")) // Rechazar el archivo
+    }
+  },
 })
 
-// JWT Middleware
+// --- Middleware de Autenticación JWT ---
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"]
   const token = authHeader && authHeader.split(" ")[1]
@@ -109,26 +113,25 @@ const authenticateToken = (req, res, next) => {
 
   jwt.verify(token, process.env.JWT_SECRET || "your-secret-key", (err, user) => {
     if (err) {
-      return res.status(403).json({ error: "Token inválido" })
+      // Si el token es inválido o ha expirado
+      return res.status(403).json({ error: "Token inválido o expirado" })
     }
-    req.user = user
+    req.user = user // Adjuntar la información del usuario al objeto de solicitud
     next()
   })
 }
 
-// Authorization middleware
+// --- Middleware de Autorización por Rol ---
 const authorize = (roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.rol)) {
+    if (!req.user || !roles.includes(req.user.rol)) {
       return res.status(403).json({ error: "No tienes permisos para esta acción" })
     }
     next()
   }
 }
 
-// Routes
-
-// Auth Routes
+// --- Rutas de Autenticación ---
 app.post("/api/auth/login", async (req, res) => {
   try {
     const { correo, contraseña } = req.body
@@ -150,6 +153,7 @@ app.post("/api/auth/login", async (req, res) => {
       return res.status(401).json({ error: "Credenciales inválidas" })
     }
 
+    // Generar JWT
     const token = jwt.sign(
       {
         id: user.id_usuario,
@@ -157,7 +161,7 @@ app.post("/api/auth/login", async (req, res) => {
         rol: user.rol,
         nombre: user.nombre,
       },
-      process.env.JWT_SECRET || "your-secret-key",
+      process.env.JWT_SECRET || "your-secret-key", // ¡Usar una clave secreta fuerte y única!
       { expiresIn: "24h" },
     )
 
@@ -184,7 +188,7 @@ app.post("/api/auth/register", authenticateToken, authorize(["Administrador"]), 
       return res.status(400).json({ error: "Todos los campos son requeridos" })
     }
 
-    // Check if user already exists
+    // Verificar si el usuario ya existe
     const [existingUser] = await pool.execute("SELECT id_usuario FROM usuarios WHERE correo = ?", [correo])
 
     if (existingUser.length > 0) {
@@ -208,7 +212,7 @@ app.post("/api/auth/register", authenticateToken, authorize(["Administrador"]), 
   }
 })
 
-// User Routes
+// --- Rutas de Usuarios ---
 app.get("/api/usuarios", authenticateToken, authorize(["Administrador"]), async (req, res) => {
   try {
     const [rows] = await pool.execute("SELECT id_usuario, nombre, correo, rol FROM usuarios ORDER BY nombre")
@@ -223,7 +227,7 @@ app.get("/api/usuarios/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params
 
-    // Users can only access their own data unless they're admin
+    // Los usuarios solo pueden acceder a sus propios datos a menos que sean administradores
     if (req.user.rol !== "Administrador" && req.user.id !== Number.parseInt(id)) {
       return res.status(403).json({ error: "No tienes permisos para acceder a esta información" })
     }
@@ -241,7 +245,7 @@ app.get("/api/usuarios/:id", authenticateToken, async (req, res) => {
   }
 })
 
-// Category Routes
+// --- Rutas de Categorías ---
 app.get("/api/categorias", authenticateToken, async (req, res) => {
   try {
     const [rows] = await pool.execute(`
@@ -280,11 +284,11 @@ app.post("/api/categorias", authenticateToken, authorize(["Administrador", "Peri
   }
 })
 
-// File Routes
+// --- Rutas de Archivos ---
 app.get("/api/archivos", authenticateToken, async (req, res) => {
   try {
     const { page = 1, limit = 20, tipo, categoria, tag, nivel_acceso } = req.query
-    const offset = (page - 1) * limit
+    const offset = (Number.parseInt(page) - 1) * Number.parseInt(limit) // Asegúrate de parsear a número
 
     let query = `
       SELECT a.*, c.nombre as categoria_nombre, u.nombre as usuario_nombre,
@@ -302,10 +306,9 @@ app.get("/api/archivos", authenticateToken, async (req, res) => {
       LEFT JOIN secciones_periodico sp ON ase.id_seccion = sp.id_seccion
       WHERE 1=1
     `
-
     const params = []
 
-    // Apply filters based on user role
+    // Aplicar filtros basados en el rol del usuario para la visualización
     if (req.user.rol === "Visualizador") {
       query += ' AND a.nivel_acceso = "público"'
     } else if (req.user.rol === "Periodista") {
@@ -322,6 +325,17 @@ app.get("/api/archivos", authenticateToken, async (req, res) => {
       query += " AND a.id_categoria = ?"
       params.push(categoria)
     }
+    // Si se busca por tag, se necesita un JOIN adicional o subconsulta
+    // Por simplicidad, si `tag` se usa en un LIKE en la consulta principal,
+    // Asegúrate de que los `GROUP_CONCAT` se manejen bien con la paginación.
+    // Para tags, quizás sea mejor un `HAVING` o una subconsulta compleja si necesitas filtrar por tags específicos
+    if (tag) {
+      // Para buscar archivos que tienen un tag específico, puedes unirte a la tabla de tags
+      // y filtrar por el nombre del tag. Esto es más robusto que un LIKE en GROUP_CONCAT.
+      query += ' AND a.id_archivo IN (SELECT at2.id_archivo FROM archivo_tags at2 JOIN tags t2 ON at2.id_tag = t2.id_tag WHERE t2.nombre LIKE ?)'
+      params.push(`%${tag}%`)
+    }
+
 
     if (nivel_acceso && req.user.rol === "Administrador") {
       query += " AND a.nivel_acceso = ?"
@@ -329,11 +343,11 @@ app.get("/api/archivos", authenticateToken, async (req, res) => {
     }
 
     query += " GROUP BY a.id_archivo ORDER BY a.fecha_subida DESC LIMIT ? OFFSET ?"
-    params.push(Number.parseInt(limit), Number.parseInt(offset))
+    params.push(Number.parseInt(limit), offset)
 
     const [rows] = await pool.execute(query, params)
 
-    // Get total count for pagination
+    // Obtener el conteo total para la paginación
     let countQuery = "SELECT COUNT(DISTINCT a.id_archivo) as total FROM archivos a WHERE 1=1"
     const countParams = []
 
@@ -353,6 +367,10 @@ app.get("/api/archivos", authenticateToken, async (req, res) => {
       countQuery += " AND a.id_categoria = ?"
       countParams.push(categoria)
     }
+    if (tag) {
+      countQuery += ' AND a.id_archivo IN (SELECT at2.id_archivo FROM archivo_tags at2 JOIN tags t2 ON at2.id_tag = t2.id_tag WHERE t2.nombre LIKE ?)'
+      countParams.push(`%${tag}%`)
+    }
 
     if (nivel_acceso && req.user.rol === "Administrador") {
       countQuery += " AND a.nivel_acceso = ?"
@@ -368,7 +386,7 @@ app.get("/api/archivos", authenticateToken, async (req, res) => {
         page: Number.parseInt(page),
         limit: Number.parseInt(limit),
         total,
-        pages: Math.ceil(total / limit),
+        pages: Math.ceil(total / Number.parseInt(limit)),
       },
     })
   } catch (error) {
@@ -381,15 +399,16 @@ app.post(
   "/api/archivos",
   authenticateToken,
   authorize(["Administrador", "Periodista"]),
-  upload.single("archivo"),
+  upload.single("archivo"), // Maneja la subida de un solo archivo con el nombre de campo "archivo"
   async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No se ha subido ningún archivo" })
       }
 
+      // Desestructurar los campos del body y el archivo
       const {
-        titulo_archivo, // <--- AÑADE ESTO AQUÍ
+        titulo_archivo,
         tipo,
         fuente,
         lugar_captura,
@@ -397,58 +416,57 @@ app.post(
         derechos_uso,
         nivel_acceso,
         id_categoria,
-        tags,
-        colecciones,
-        secciones,
+        tags,        // Vienen como string JSON o string simple
+        colecciones, // Vienen como string JSON o string simple
+        secciones,   // Vienen como string JSON o string simple
       } = req.body
 
-      const ruta_storage = `uploads/${req.file.filename}`
+      const ruta_storage = `uploads/${req.file.filename}` // Ruta relativa para guardar en BD
 
-      // Determine file type based on extension if not provided
+      // Determinar el tipo de archivo si no se proporciona explícitamente
       const fileType = tipo || getFileType(req.file.mimetype)
 
+      // Insertar información del archivo en la base de datos
       const [result] = await pool.execute(
         `
-      INSERT INTO archivos (
-        nombre_archivo, tipo, ruta_storage, fuente, lugar_captura, 
-        fecha_captura, derechos_uso, nivel_acceso, id_usuario, id_categoria,
-        titulo_archivo -- <--- AÑADE ESTO AQUÍ
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `,
+          INSERT INTO archivos (
+            nombre_archivo, tipo, ruta_storage, fuente, lugar_captura,
+            fecha_captura, derechos_uso, nivel_acceso, id_usuario, id_categoria,
+            titulo_archivo
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
         [
           req.file.originalname,
           fileType,
           ruta_storage,
           fuente,
           lugar_captura,
-          fecha_captura || null,
+          fecha_captura || null, // Permite nulo si no se proporciona fecha
           derechos_uso,
-          nivel_acceso || "público",
-          req.user.id,
-          id_categoria || null,
-          titulo_archivo, // <--- AÑADE ESTO AQUÍ
+          nivel_acceso || "público", // Valor por defecto
+          req.user.id, // ID del usuario que sube el archivo (del token JWT)
+          id_categoria || null, // Permite nulo
+          titulo_archivo,
         ],
       )
 
       const archivoId = result.insertId
 
-      // Add tags if provided
+      // Manejo de Tags
       if (tags) {
         let tagArray;
         try {
-          tagArray = JSON.parse(tags);
+          tagArray = JSON.parse(tags); // Intenta parsear como JSON
         } catch (e) {
           console.warn("Error parsing tags, treating as single tag string:", tags);
-          tagArray = [tags]; // Treat as a single tag if parsing fails
+          tagArray = [tags]; // Si falla, lo trata como un solo tag string
         }
         for (const tagName of tagArray) {
-          // Insert tag if it doesn't exist
+          // Insertar tag si no existe (INSERT IGNORE)
           await pool.execute("INSERT IGNORE INTO tags (nombre) VALUES (?)", [tagName])
-
-          // Get tag ID
+          // Obtener el ID del tag
           const [tagResult] = await pool.execute("SELECT id_tag FROM tags WHERE nombre = ?", [tagName])
-
-          // Link file to tag
+          // Vincular archivo con tag
           await pool.execute("INSERT INTO archivo_tags (id_archivo, id_tag) VALUES (?, ?)", [
             archivoId,
             tagResult[0].id_tag,
@@ -456,14 +474,14 @@ app.post(
         }
       }
 
-      // Add to collections if provided
+      // Manejo de Colecciones
       if (colecciones) {
         let coleccionArray;
         try {
           coleccionArray = JSON.parse(colecciones);
         } catch (e) {
           console.warn("Error parsing colecciones, treating as single coleccion string:", colecciones);
-          coleccionArray = [colecciones]; // Treat as a single collection if parsing fails
+          coleccionArray = [colecciones];
         }
         for (const coleccionId of coleccionArray) {
           await pool.execute("INSERT INTO archivo_coleccion (id_archivo, id_coleccion) VALUES (?, ?)", [
@@ -473,14 +491,14 @@ app.post(
         }
       }
 
-      // Add to sections if provided
+      // Manejo de Secciones
       if (secciones) {
         let seccionArray;
         try {
           seccionArray = JSON.parse(secciones);
         } catch (e) {
           console.warn("Error parsing secciones, treating as single seccion string:", secciones);
-          seccionArray = [secciones]; // Treat as a single section if parsing fails
+          seccionArray = [secciones];
         }
         for (const seccionId of seccionArray) {
           await pool.execute("INSERT INTO archivo_seccion (id_archivo, id_seccion) VALUES (?, ?)", [
@@ -504,16 +522,16 @@ app.post(
   },
 )
 
-// Helper function to determine file type
+// Función auxiliar para determinar el tipo de archivo basado en MIME type
 function getFileType(mimetype) {
   if (mimetype.startsWith("image/")) return "imagen"
   if (mimetype.startsWith("video/")) return "video"
   if (mimetype.startsWith("audio/")) return "audio"
-  return "documento"
+  return "documento" // Tipo por defecto
 }
 
-// Tags Routes
-app.get("/api/tags", async (req, res) => { // Removido authenticateToken si es para acceso público
+// --- Rutas de Tags ---
+app.get("/api/tags", async (req, res) => { // Considera si necesita autenticación o si es público
   try {
     const [rows] = await pool.execute("SELECT * FROM tags ORDER BY nombre")
     res.json(rows)
@@ -538,7 +556,7 @@ app.post("/api/tags", authenticateToken, authorize(["Administrador", "Periodista
       id: result.insertId,
     })
   } catch (error) {
-    if (error.code === "ER_DUP_ENTRY") {
+    if (error.code === "ER_DUP_ENTRY") { // Manejo de error para entradas duplicadas
       return res.status(400).json({ error: "El tag ya existe" })
     }
     console.error("Create tag error:", error)
@@ -546,7 +564,7 @@ app.post("/api/tags", authenticateToken, authorize(["Administrador", "Periodista
   }
 })
 
-// Collections Routes
+// --- Rutas de Colecciones ---
 app.get("/api/colecciones", authenticateToken, async (req, res) => {
   try {
     const [rows] = await pool.execute("SELECT * FROM colecciones ORDER BY nombre")
@@ -580,7 +598,7 @@ app.post("/api/colecciones", authenticateToken, authorize(["Administrador", "Per
   }
 })
 
-// Sections Routes
+// --- Rutas de Secciones de Periódico ---
 app.get("/api/secciones", authenticateToken, async (req, res) => {
   try {
     const [rows] = await pool.execute("SELECT * FROM secciones_periodico ORDER BY nombre")
@@ -614,7 +632,7 @@ app.post("/api/secciones", authenticateToken, authorize(["Administrador"]), asyn
   }
 })
 
-// Search endpoint
+// --- Ruta de Búsqueda General ---
 app.get("/api/buscar", authenticateToken, async (req, res) => {
   try {
     const { q, tipo, categoria } = req.query
@@ -635,13 +653,13 @@ app.get("/api/buscar", authenticateToken, async (req, res) => {
         a.fuente LIKE ? OR
         a.lugar_captura LIKE ? OR
         t.nombre LIKE ? OR
-        a.titulo_archivo LIKE ? -- <--- AÑADE ESTO AQUÍ
+        a.titulo_archivo LIKE ?
       )
     `
 
-    const params = [`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`] // <--- AÑADE UN PARÁMETRO AQUÍ
+    const params = [`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`]
 
-    // Apply access level restrictions
+    // Aplicar restricciones de nivel de acceso
     if (req.user.rol === "Visualizador") {
       query += ' AND a.nivel_acceso = "público"'
     } else if (req.user.rol === "Periodista") {
@@ -669,19 +687,19 @@ app.get("/api/buscar", authenticateToken, async (req, res) => {
   }
 })
 
-// Statistics endpoint
+// --- Ruta de Estadísticas ---
 app.get("/api/estadisticas", authenticateToken, authorize(["Administrador"]), async (req, res) => {
   try {
     const [totalFiles] = await pool.execute("SELECT COUNT(*) as total FROM archivos")
     const [totalUsers] = await pool.execute("SELECT COUNT(*) as total FROM usuarios")
     const [filesByType] = await pool.execute(`
-      SELECT tipo, COUNT(*) as cantidad 
-      FROM archivos 
+      SELECT tipo, COUNT(*) as cantidad
+      FROM archivos
       GROUP BY tipo
     `)
     const [filesByAccess] = await pool.execute(`
-      SELECT nivel_acceso, COUNT(*) as cantidad 
-      FROM archivos 
+      SELECT nivel_acceso, COUNT(*) as cantidad
+      FROM archivos
       GROUP BY nivel_acceso
     `)
 
@@ -697,25 +715,21 @@ app.get("/api/estadisticas", authenticateToken, authorize(["Administrador"]), as
   }
 })
 
-// Error handling middleware
-app.use((error, req, res, next) => {
-  console.error("Unhandled error:", error);
-  res.status(500).json({ error: "Error interno del servidor" });
-});
-
-// PATCH /api/archivos/:id/descarga → Registrar una descarga
+// --- Ruta para Registrar una Descarga (PATCH) ---
+// Esta ruta es útil si necesitas incrementar el contador SIN necesariamente enviar el archivo
+// por ejemplo, si el archivo ya se está sirviendo directamente o por otro mecanismo.
+// Sin embargo, para la descarga activa, la ruta GET /api/descargar/:id es más completa.
 app.patch("/api/archivos/:id/descarga", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Verifica si el archivo existe primero
-    const [rows] = await pool.execute("SELECT downloads FROM archivos WHERE id_archivo = ?", [id]);
-
+    // Verificar si el archivo existe
+    const [rows] = await pool.execute("SELECT id_archivo FROM archivos WHERE id_archivo = ?", [id]);
     if (rows.length === 0) {
       return res.status(404).json({ error: "Archivo no encontrado" });
     }
 
-    // Actualiza el contador de descargas
+    // Actualizar el contador de descargas
     await pool.execute(
       "UPDATE archivos SET downloads = COALESCE(downloads, 0) + 1 WHERE id_archivo = ?",
       [id]
@@ -723,77 +737,102 @@ app.patch("/api/archivos/:id/descarga", authenticateToken, async (req, res) => {
 
     res.json({ message: "Descarga registrada correctamente" });
   } catch (error) {
-    console.error("Error registrando descarga:", error);
+    console.error("Error registrando descarga (PATCH):", error);
     res.status(500).json({ error: "Error interno al registrar la descarga" });
   }
-
 });
 
-// Consolidado la lógica de descarga en una única ruta más robusta
+// --- Ruta Principal de Descarga de Archivos (GET) ---
+// Esta ruta gestiona la autenticación, autorización, incrementa el contador y envía el archivo.
+// Es la ruta preferida para iniciar una descarga desde el frontend.
 app.get("/api/descargar/:id", authenticateToken, async (req, res) => {
   const fileId = req.params.id;
+  console.log(`[Descarga] Solicitud de descarga para ID: ${fileId}`);
 
   try {
     // 1. Obtener información del archivo de la base de datos
     const [rows] = await pool.execute('SELECT ruta_storage, nombre_archivo, nivel_acceso, id_usuario FROM archivos WHERE id_archivo = ?', [fileId]);
 
     if (rows.length === 0) {
+      console.log(`[Descarga] Archivo con ID ${fileId} no encontrado en la BD.`);
       return res.status(404).json({ error: 'Archivo no encontrado.' });
     }
 
     const file = rows[0];
+    console.log(`[Descarga] Información de archivo obtenida: ${JSON.stringify(file)}`);
 
-    // Lógica de control de acceso basada en tu implementación (Visualizador, Periodista, Administrador)
+    // Lógica de control de acceso basada en rol
+    // Nota: req.user.id es el id_usuario del usuario logueado
+    // file.id_usuario es el id_usuario propietario del archivo
     if (req.user.rol === "Visualizador" && file.nivel_acceso !== "público") {
+      console.warn(`[Descarga] Acceso denegado para Visualizador a archivo ${fileId} (${file.nivel_acceso}).`);
       return res.status(403).json({ error: 'Acceso denegado. Solo puedes descargar archivos públicos.' });
     }
     if (req.user.rol === "Periodista" && !(file.nivel_acceso === "público" || file.nivel_acceso === "restringido" || file.id_usuario === req.user.id)) {
+        console.warn(`[Descarga] Acceso denegado para Periodista a archivo ${fileId} (${file.nivel_acceso}, propietario ${file.id_usuario}, usuario ${req.user.id}).`);
         return res.status(403).json({ error: 'Acceso denegado. No tienes permisos para descargar este archivo.' });
     }
-    // Administrador tiene acceso a todo
+    // El Administrador tiene acceso a todo por defecto si pasa los middlewares anteriores
 
-    // 2. Incrementar el contador de descargas
+    // 2. Incrementar el contador de descargas en la base de datos
     await pool.execute('UPDATE archivos SET downloads = COALESCE(downloads, 0) + 1 WHERE id_archivo = ?', [fileId]);
+    console.log(`[Descarga] Contador de descargas incrementado para ID: ${fileId}.`);
 
-    // 3. Construir la ruta al archivo en el sistema de archivos
+
+    // 3. Construir la ruta absoluta al archivo en el sistema de archivos
+    // path.basename(file.ruta_storage) extraerá solo el nombre del archivo
+    // e.g., de "uploads/archivo-1700000000-123.jpg" -> "archivo-1700000000-123.jpg"
     const fileNameInStorage = path.basename(file.ruta_storage);
     const filePath = path.join(__dirname, 'uploads', fileNameInStorage);
+    console.log(`[Descarga] Ruta física del archivo a descargar: ${filePath}`);
 
-    // Verificar si el archivo existe en el sistema de archivos
+    // Verificar si el archivo existe físicamente en el servidor
     const fileExists = await fs.access(filePath)
                                .then(() => true)
                                .catch(() => false);
 
     if (!fileExists) {
-        console.error(`Archivo no encontrado en el sistema de archivos: ${filePath}`);
-        return res.status(500).json({ error: 'El archivo no está disponible para descarga en el servidor.' });
+        console.error(`[Descarga] Archivo no encontrado físicamente en el sistema: ${filePath}`);
+        return res.status(500).json({ error: 'El archivo no está disponible para descarga en el servidor (físicamente no encontrado).' });
     }
 
     // 4. Enviar el archivo al cliente
+    // res.download() establecerá automáticamente Content-Disposition para forzar la descarga
     res.download(filePath, file.nombre_archivo, (err) => {
       if (err) {
-        console.error(`Error al enviar el archivo ${file.nombre_archivo}:`, err);
-        if (!res.headersSent) { // Evitar enviar cabeceras dos veces
+        // Manejar errores durante el envío del archivo
+        console.error(`[Descarga] Error al enviar el archivo ${file.nombre_archivo} (ID: ${fileId}):`, err);
+        // Evitar enviar cabeceras dos veces si ya se han enviado
+        if (!res.headersSent) {
             res.status(500).json({ error: 'Error al iniciar la descarga del archivo.' });
         }
       } else {
-        console.log(`Archivo ${file.nombre_archivo} descargado y contador incrementado.`);
+        console.log(`[Descarga] Archivo ${file.nombre_archivo} (ID: ${fileId}) enviado exitosamente.`);
       }
     });
 
   } catch (error) {
-    console.error("Error en la ruta de descarga:", error);
+    console.error("[Descarga] Error general en la ruta de descarga:", error);
     if (!res.headersSent) {
         res.status(500).json({ error: "Error interno del servidor al procesar la descarga." });
     }
   }
 });
 
-// manejador 404:
+
+// --- Manejador de Errores General ---
+// Este middleware captura cualquier error no manejado en las rutas
+app.use((error, req, res, next) => {
+  console.error("Unhandled error:", error);
+  res.status(500).json({ error: "Error interno del servidor" });
+});
+
+// --- Manejador 404 (para rutas no definidas) ---
 app.use("*", (req, res) => {
   res.status(404).json({ error: "Endpoint no encontrado" });
 });
 
+// Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`)
 })

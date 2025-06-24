@@ -5,9 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, switchMap, tap, catchError } from 'rxjs';
 
-import { FileService } from '../../../../core/services/file';
-import { File as AppFile } from '../../../../shared/models/file';
-import { environment } from '../../../../../environments/environment';
+import { FileService } from '../../../../core/services/file'; // Asegúrate que la ruta sea correcta
+import { File as AppFile } from '../../../../shared/models/file'; // Asegúrate que la ruta sea correcta y el modelo sea correcto
+import { environment } from '../../../../../environments/environment'; // Asegúrate que la ruta sea correcta
 
 // Interfaces para tipar correctamente la respuesta del backend
 interface PaginationInfo {
@@ -46,7 +46,7 @@ export class FileListComponent implements OnInit {
   selectedTipo: string = '';
   selectedCategory: number | null = null;
   selectedAccessLevel: string = '';
-  categories: any[] = [];
+  categories: any[] = []; // Idealmente tipar esto con una interfaz de Categoria
 
   userRole: string = 'Usuario'; // Idealmente vendría desde el AuthService
 
@@ -76,7 +76,8 @@ export class FileListComponent implements OnInit {
           tap(() => this.isLoading = false),
           catchError(err => {
             this.isLoading = false;
-            this.error = `Error al cargar los archivos: ${err.statusText || err.message || 'Error desconocido'}`;
+            console.error("Error al cargar archivos:", err); // Log del error completo
+            this.error = `Error al cargar los archivos: ${err.message || 'Error desconocido'}. Código: ${err.status || ''}`;
             return of({
               archivos: [],
               pagination: { page: 1, limit: this.limit, total: 0, pages: 0 }
@@ -85,7 +86,16 @@ export class FileListComponent implements OnInit {
         )
       )
     );
+    // Posiblemente cargar categorías aquí:
+    // this.loadCategories();
   }
+
+  // loadCategories() {
+  //   this.fileService.getCategories().subscribe({ // Asume que tienes un método getCategories en tu FileService
+  //     next: (data) => this.categories = data,
+  //     error: (err) => console.error("Error loading categories", err)
+  //   });
+  // }
 
   /** Cambia la página actual */
   goToPage(page: number): void {
@@ -94,12 +104,12 @@ export class FileListComponent implements OnInit {
 
   /** Se ejecuta cuando cambian los filtros select (tipo o acceso) */
   onFilterChange(): void {
-    this.pageSubject.next(1);
+    this.pageSubject.next(1); // Volver a la primera página con los nuevos filtros
   }
 
   /** Se ejecuta al escribir en la búsqueda por etiquetas */
   onSearch(): void {
-    this.pageSubject.next(1);
+    this.pageSubject.next(1); // Volver a la primera página con el nuevo término de búsqueda
   }
 
   /** Reinicia todos los filtros y vuelve a la primera página */
@@ -112,11 +122,17 @@ export class FileListComponent implements OnInit {
   }
 
   /**
-   * Construye la URL completa del archivo desde su ruta relativa.
+   * Construye la URL completa del archivo para visualización (no descarga).
+   * Útil para mostrar miniaturas o previas si el archivo es directamente accesible.
    * @param ruta Ruta relativa desde el backend (e.g. "uploads/image.jpg")
    */
   getFileUrl(ruta: string): string {
-    return `${environment.apiUrl}/uploads/${ruta.split('/').pop()}`;
+    // CORRECCIÓN AQUÍ: Quitar '/api' ya que environment.apiUrl ya lo incluye.
+    // El servidor Node.js sirve los archivos estáticos en `http://localhost:3000/api/uploads/`
+    const fileName = ruta.split('/').pop();
+    return `${environment.apiUrl.replace('/api', '')}/api/uploads/${fileName}`;
+    // Alternativa si environment.apiUrl SIEMPRE es 'http://localhost:3000/api':
+    // return `http://localhost:3000/api/uploads/${fileName}`;
   }
 
   /** Muestra el modal con información detallada del archivo */
@@ -130,29 +146,50 @@ export class FileListComponent implements OnInit {
   }
 
   /**
-   * Descarga un archivo y registra la descarga en el backend.
+   * Descarga un archivo.
+   * Esta función ahora llama directamente a la ruta GET /api/descargar/:id
+   * que ya incrementa el contador en el backend y fuerza la descarga.
    * @param archivo Archivo a descargar
    */
   descargarArchivo(archivo: AppFile): void {
-    this.fileService.registrarDescarga(archivo.id_archivo).subscribe({
-      next: () => {
-        // Incrementar el contador local
+    if (!archivo || !archivo.id_archivo) {
+      this.error = 'Error: No se puede descargar un archivo inválido.';
+      return;
+    }
+
+    this.fileService.downloadFile(archivo.id_archivo).subscribe({
+      next: (blob) => {
+        // Crear una URL temporal para el Blob recibido
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = archivo.nombre_archivo || `descarga_${archivo.id_archivo}`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+
+        console.log(`✅ Archivo '${archivo.nombre_archivo}' (ID: ${archivo.id_archivo}) descargado.`);
+
         if (archivo.downloads !== undefined && archivo.downloads !== null) {
           archivo.downloads++;
         } else {
           archivo.downloads = 1;
         }
-
-        const downloadUrl = `${environment.apiUrl}/descargar/${archivo.id_archivo}`;
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = archivo.nombre_archivo || 'archivo';
-        a.target = '_blank';
-        a.click();
       },
       error: err => {
-        console.error("❌ Error registrando descarga o al intentar descargar:", err);
-        this.error = 'Error al intentar descargar el archivo.';
+        console.error("❌ Error al descargar el archivo:", err);
+        let errorMessage = 'Error al intentar descargar el archivo.';
+        if (err.status === 401 || err.status === 403) {
+          errorMessage = 'No tienes permisos para descargar este archivo o tu sesión ha expirado.';
+        } else if (err.status === 404) {
+          errorMessage = 'El archivo solicitado no fue encontrado en el servidor.';
+        } else if (err.error && typeof err.error === 'object' && err.error.error) {
+          errorMessage = err.error.error;
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+        this.error = errorMessage;
       }
     });
   }

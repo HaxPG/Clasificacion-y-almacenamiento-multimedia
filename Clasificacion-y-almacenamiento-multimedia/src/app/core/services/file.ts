@@ -1,9 +1,8 @@
-// src/app/core/services/file.service.ts
+// src/app/core/services/file/file.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpEvent } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams, HttpEvent, HttpEventType } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import { File as AppFile, PaginatedFiles } from '../../shared/models/file';
+import { environment } from '../../../environments/environment'; // Asegúrate que la ruta sea correcta
 
 @Injectable({
   providedIn: 'root'
@@ -11,90 +10,77 @@ import { File as AppFile, PaginatedFiles } from '../../shared/models/file';
 export class FileService {
   private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
+
+  // Método para obtener los encabezados de autorización (JWT)
+  private getAuthHeaders(): HttpHeaders {
+    // Aquí deberías obtener el token de donde lo almacenes, por ejemplo, localStorage o un servicio de autenticación
+    const token = localStorage.getItem('jwt_token'); // O tu método para obtener el token
+    if (token) {
+      return new HttpHeaders({
+        'Authorization': `Bearer ${token}`
+      });
+    }
+    return new HttpHeaders(); // Retorna un HttpHeaders vacío si no hay token
+  }
 
   /**
-   * Obtiene archivos paginados desde el backend con filtros opcionales.
-   * @param page Página actual
-   * @param limit Cantidad de elementos por página
-   * @param tipo Tipo de archivo (opcional)
-   * @param id_categoria ID de la categoría (opcional)
-   * @param searchTerm Término de búsqueda (opcional)
-   * @param nivel_acceso Nivel de acceso del archivo (opcional)
+   * Obtiene la lista de archivos paginada y filtrada.
    */
   getFiles(
-    page: number = 1,
-    limit: number = 20,
+    page: number,
+    limit: number,
     tipo?: string,
-    id_categoria?: number,
-    searchTerm?: string,
+    categoria?: number,
+    tag?: string,
     nivel_acceso?: string
-  ): Observable<PaginatedFiles> {
+  ): Observable<any> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('limit', limit.toString());
 
-    if (tipo) params = params.append('tipo', tipo);
-    if (id_categoria !== undefined && id_categoria !== null) params = params.append('id_categoria', id_categoria.toString());
-    if (searchTerm && searchTerm.trim() !== '') params = params.append('searchTerm', searchTerm.trim());
-    if (nivel_acceso) params = params.append('nivel_acceso', nivel_acceso);
+    if (tipo) params = params.set('tipo', tipo);
+    if (categoria) params = params.set('categoria', categoria.toString());
+    if (tag) params = params.set('tag', tag);
+    if (nivel_acceso) params = params.set('nivel_acceso', nivel_acceso);
 
-    return this.http.get<PaginatedFiles>(`${this.apiUrl}/archivos`, { params });
+    return this.http.get<any>(`${this.apiUrl}/archivos`, { headers: this.getAuthHeaders(), params });
   }
 
   /**
-   * Sube un archivo al backend utilizando FormData.
-   * Se configuran opciones para observar el progreso de carga.
+   * Registra una descarga en el backend (ruta PATCH).
+   * Esta ruta solo incrementa el contador y retorna un mensaje, NO descarga el archivo.
+   * Se mantiene por si necesitas la funcionalidad de "solo contar" de forma independiente.
    */
-  uploadFile(formData: FormData): Observable<HttpEvent<any>> {
-    return this.http.post(`${this.apiUrl}/archivos`, formData, {
-      reportProgress: true,
-      observe: 'events'
+  registrarDescarga(fileId: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/archivos/${fileId}/descarga`, {}, { headers: this.getAuthHeaders() });
+  }
+
+  /**
+   * Inicia la descarga de un archivo directamente desde el backend (ruta GET).
+   * Esta ruta ya incrementa el contador de descargas en el servidor.
+   * Retorna un Blob para que el frontend pueda manejar la descarga.
+   */
+  downloadFile(fileId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/descargar/${fileId}`, {
+      headers: this.getAuthHeaders(),
+      responseType: 'blob' // Es crucial indicar que esperamos un Blob (el contenido binario del archivo)
     });
   }
 
   /**
-   * Busca archivos utilizando un query string, con filtros opcionales por tipo y categoría.
-   * @param query Término de búsqueda
-   * @param tipo Tipo de archivo (opcional)
-   * @param id_categoria ID de categoría (opcional)
+   * Sube un archivo al servidor.
+   * Utiliza reportProgress para obtener eventos de progreso.
+   * @param formData El FormData que contiene el archivo y otros datos.
+   * @returns Un Observable de HttpEvent para el progreso de la subida.
    */
-  searchFiles(query: string, tipo?: string, id_categoria?: number): Observable<AppFile[]> {
-    let params = new HttpParams().set('q', query);
-    if (tipo) params = params.append('tipo', tipo);
-    if (id_categoria !== undefined && id_categoria !== null) {
-      params = params.append('id_categoria', id_categoria.toString());
-    }
-
-    return this.http.get<AppFile[]>(`${this.apiUrl}/buscar`, { params });
-  }
-
-  /**
-   * Obtiene estadísticas generales del sistema desde el backend.
-   */
-  getStatistics(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/estadisticas`);
-  }
-
-  /**
-   * Registra una descarga para un archivo específico.
-   * @param id ID del archivo descargado
-   */
-  registrarDescarga(id: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/archivos/${id}/descarga`, {});
-  }
-
-  /**
-   * Descarga un archivo como Blob, útil para archivos binarios.
-   * Incluye el token manualmente en el header por si el interceptor no aplica.
-   * @param filename Nombre del archivo
-   */
-  descargarArchivoBlob(filename: string): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/descargar/${filename}`, {
-      responseType: 'blob',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token') || ''}`
-      }
+  uploadFile(formData: FormData): Observable<HttpEvent<any>> {
+    // La cabecera Content-Type para FormData es establecida automáticamente por el navegador
+    // al usar un objeto FormData, incluyendo el 'boundary'. No necesitas setearla manualmente aquí.
+    return this.http.post<any>(`${this.apiUrl}/archivos`, formData, {
+      headers: this.getAuthHeaders(),
+      reportProgress: true, // Habilitar reportes de progreso
+      observe: 'events'     // Observar todos los eventos HTTP (UploadProgress, Response, etc.)
     });
   }
 }
