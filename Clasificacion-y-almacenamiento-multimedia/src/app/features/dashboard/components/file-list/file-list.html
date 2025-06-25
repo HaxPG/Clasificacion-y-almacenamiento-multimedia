@@ -2,7 +2,7 @@
 <div class="file-list-container">
   <h2>Gestión de Archivos Multimedia</h2>
 
-  <!-- Sección de filtros por etiquetas, tipo y nivel de acceso -->
+  <!-- Sección de filtros -->
   <div class="filters-section">
     <input
       type="text"
@@ -30,19 +30,17 @@
     <button (click)="resetFilters()">Reiniciar filtros</button>
   </div>
 
-  <!-- Bloque principal de archivos -->
+  <!-- Contenido de archivos -->
   <ng-container *ngIf="(archivos$ | async) as data; else loadingOrEmpty">
-
-    <!-- Si hay archivos disponibles -->
     <div *ngIf="data.archivos && data.archivos.length > 0; else noFiles">
-      <div class="file-grid">
-        <!-- Tarjetas individuales de archivos -->
+      
+      <!-- Masonry Grid -->
+      <div class="masonry-grid">
         <div
-          class="file-card"
+          class="masonry-item"
           *ngFor="let archivo of data.archivos"
           (click)="mostrarDetalle(archivo)"
         >
-          <!-- Previsualización dinámica según el tipo de archivo -->
           <ng-container [ngSwitch]="archivo.tipo">
             <img *ngSwitchCase="'imagen'" [src]="getFileUrl(archivo.ruta_storage)" alt="Preview" class="file-thumbnail" />
             <video *ngSwitchCase="'video'" [src]="getFileUrl(archivo.ruta_storage)" muted class="file-thumbnail"></video>
@@ -51,10 +49,8 @@
             <div *ngSwitchDefault class="file-icon"><i class="fas fa-file fa-3x"></i></div>
           </ng-container>
 
-          <!-- Nombre del archivo -->
           <div class="file-name">{{ archivo.titulo_archivo || archivo.nombre_archivo }}</div>
 
-          <!-- Etiquetas visuales del tipo y acceso del archivo -->
           <div class="file-badges">
             <span class="badge tipo">
               {{
@@ -79,7 +75,7 @@
         </div>
       </div>
 
-      <!-- Paginación si hay más de una página -->
+      <!-- Paginación -->
       <div class="pagination-controls" *ngIf="data.pagination && data.pagination.pages > 1">
         <button (click)="goToPage(data.pagination.page - 1)" [disabled]="data.pagination.page === 1">Anterior</button>
         <button
@@ -92,49 +88,87 @@
         <button (click)="goToPage(data.pagination.page + 1)" [disabled]="data.pagination.page === data.pagination.pages">Siguiente</button>
       </div>
 
-      <!-- Modal de detalle del archivo seleccionado -->
-      <div class="modal-backdrop" *ngIf="archivoSeleccionado">
-        <div class="modal-content">
-          <button class="modal-close" (click)="cerrarModal()">×</button>
+      <!-- Modal -->
+<!-- Modal de detalle del archivo seleccionado -->
+<!-- Modal de detalle del archivo seleccionado -->
+<div class="modal-backdrop" *ngIf="archivoSeleccionado">
+  <div class="modal-rediseñado">
+    <!-- Cierre -->
+    <button class="modal-close" (click)="cerrarModal()">×</button>
 
-          <!-- Visualización ampliada según tipo -->
-          <img
-            *ngIf="archivoSeleccionado.tipo === 'imagen'"
-            [src]="getFileUrl(archivoSeleccionado.ruta_storage)"
-            class="modal-img"
-          />
-          <video
-            *ngIf="archivoSeleccionado.tipo === 'video'"
-            [src]="getFileUrl(archivoSeleccionado.ruta_storage)"
-            class="modal-img"
-            controls
-          ></video>
+    <!-- Contenido dividido -->
+    <div class="modal-container">
+      <!-- Columna izquierda: previsualización -->
+      <div class="modal-left">
+        <img
+          *ngIf="archivoSeleccionado.tipo === 'imagen'"
+          [src]="getFileUrl(archivoSeleccionado.ruta_storage)"
+          alt="Preview"
+          class="modal-image"
+        />
+        <video
+          *ngIf="archivoSeleccionado.tipo === 'video'"
+          [src]="getFileUrl(archivoSeleccionado.ruta_storage)"
+          controls
+          class="modal-image"
+        ></video>
+      </div>
 
-          <!-- Información detallada -->
-          <div class="modal-info">
-            <h3>{{ archivoSeleccionado.titulo_archivo || archivoSeleccionado.nombre_archivo }}</h3>
-            <p><strong>Tipo:</strong> {{ archivoSeleccionado.tipo }}</p>
-            <p><strong>Categoría:</strong> {{ archivoSeleccionado.categoria_nombre || 'N/A' }}</p>
-            <p><strong>Acceso:</strong> {{ archivoSeleccionado.nivel_acceso }}</p>
-            <p><strong>Fuente:</strong> {{ archivoSeleccionado.fuente || 'N/A' }}</p>
-            <p><strong>Usuario:</strong> {{ archivoSeleccionado.usuario_nombre || 'N/A' }}</p>
-            <p><strong>Visualizaciones:</strong> {{ archivoSeleccionado.views || 0 }}</p>
-            <p><strong>Descargas:</strong> {{ archivoSeleccionado.downloads || 0 }}</p>
-            <button class="download-btn" (click)="descargarArchivo(archivoSeleccionado)">
-              <i class="fas fa-download"></i> Descargar
-            </button>
-          </div>
+      <!-- Columna derecha: detalles -->
+      <div class="modal-right">
+        <h2 class="modal-title">{{ archivoSeleccionado.titulo_archivo || archivoSeleccionado.nombre_archivo }}</h2>
+
+        <div class="modal-info-block">
+          <span class="modal-label">📁 Tipo:</span>
+          <span class="modal-value">{{ archivoSeleccionado.tipo }}</span>
         </div>
+
+        <div class="modal-info-block">
+          <span class="modal-label">🗂 Categoría:</span>
+          <span class="modal-value">{{ archivoSeleccionado.categoria_nombre || 'N/A' }}</span>
+        </div>
+
+        <div class="modal-info-block">
+          <span class="modal-label">🔐 Acceso:</span>
+          <span class="modal-value">{{ archivoSeleccionado.nivel_acceso }}</span>
+        </div>
+
+        <div class="modal-info-block">
+          <span class="modal-label">🌐 Fuente:</span>
+          <span class="modal-value">{{ archivoSeleccionado.fuente || 'N/A' }}</span>
+        </div>
+
+        <div class="modal-info-block">
+          <span class="modal-label">👤 Usuario:</span>
+          <span class="modal-value">{{ archivoSeleccionado.usuario_nombre || 'N/A' }}</span>
+        </div>
+
+        <div class="modal-info-block">
+          <span class="modal-label">👁 Visualizaciones:</span>
+          <span class="modal-value">{{ archivoSeleccionado.views || 0 }}</span>
+        </div>
+
+        <div class="modal-info-block">
+          <span class="modal-label">⬇️ Descargas:</span>
+          <span class="modal-value">{{ archivoSeleccionado.downloads || 0 }}</span>
+        </div>
+
+        <button class="download-btn" (click)="descargarArchivo(archivoSeleccionado)">
+          <i class="fas fa-download"></i> Descargar
+        </button>
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- Mensaje si no hay archivos que coincidan con los filtros -->
+
+    </div>
+
     <ng-template #noFiles>
       <div class="no-files-message">No se encontraron archivos con los criterios de búsqueda.</div>
     </ng-template>
   </ng-container>
 
-  <!-- Alternativa si no se ha cargado nada aún o hay error -->
   <ng-template #loadingOrEmpty>
     <div class="loading-spinner" *ngIf="isLoading">Cargando archivos...</div>
     <div class="no-files-message" *ngIf="!isLoading && !error">No hay archivos para mostrar.</div>

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { AuthService } from '../../../../core/auth/auth';
 import { Router, RouterLink, RouterModule } from '@angular/router';
 import { User } from '../../../../shared/models/user';
@@ -13,52 +13,51 @@ import { CommonModule } from '@angular/common';
   imports: [RouterLink, RouterModule, CommonModule]
 })
 export class HomeComponent implements OnInit {
-  // Observable que contiene el usuario actualmente autenticado
   currentUser$: Observable<User | null>;
-
-  // Estado de colapso del sidebar
   isCollapsed = false;
-
-  // Controla la visibilidad del botón flotante ☰
   showToggleButton = false;
 
   constructor(private authService: AuthService, private router: Router) {
-    // Se suscribe al observable del usuario autenticado desde el servicio
     this.currentUser$ = this.authService.user$;
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.updateResponsiveState();
+  }
 
-  // Cierra sesión y redirige al login
+  // Escucha cambios en el tamaño de la ventana para reactivar el botón flotante si corresponde
+  @HostListener('window:resize', [])
+  onWindowResize() {
+    this.updateResponsiveState();
+  }
+
+  private updateResponsiveState(): void {
+    const isMobile = window.innerWidth <= 768;
+    this.showToggleButton = isMobile;
+    this.isCollapsed = isMobile; // Colapsa automáticamente en móviles
+  }
+
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
 
-  // Verifica si el usuario actual tiene rol de administrador
   public get isAdmin(): boolean {
     return this.authService.isAdmin();
   }
 
-  // Verifica si el usuario actual tiene rol de periodista
   public get isJournalist(): boolean {
     return this.authService.isJournalist();
   }
 
-  // Alterna la visibilidad del sidebar (abrir/cerrar)
   toggleSidebar(): void {
-    if (!this.isCollapsed) {
-      // Oculta el sidebar y, tras la animación, muestra el botón flotante
-      this.showToggleButton = false;
-      this.isCollapsed = true;
+    this.isCollapsed = !this.isCollapsed;
 
-      setTimeout(() => {
-        this.showToggleButton = true;
-      }, 300);
+    // En móviles, mantenemos visibilidad del botón flotante
+    if (window.innerWidth <= 768) {
+      this.showToggleButton = true;
     } else {
-      // Muestra el sidebar y oculta el botón flotante
-      this.isCollapsed = false;
-      this.showToggleButton = false;
+      this.showToggleButton = !this.isCollapsed;
     }
   }
 }
