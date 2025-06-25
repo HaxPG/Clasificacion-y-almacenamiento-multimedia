@@ -3,7 +3,7 @@
   display: flex;
   height: 100vh;
   width: 100%;
-  background-color: #f3f4f6;
+  background-color: #181818;
   overflow: hidden;
   position: relative;
 }
@@ -11,12 +11,12 @@
 /* ==== SIDEBAR ==== */
 .sidebar {
   width: 260px;
-  background-color: #111827;
-  color: #f9fafb;
+  background-color: #212121;
+  color: #ffffff;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.2);
   padding: 24px 16px;
   position: fixed;
   top: 0;
@@ -44,7 +44,7 @@
 .brand {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #f9fafb;
+  color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
   transition: opacity 0.3s ease;
@@ -59,7 +59,7 @@
 .menu-toggle {
   background: none;
   border: none;
-  color: #f9fafb;
+  color: #ffffff;
   font-size: 1.5rem;
   cursor: pointer;
   transition: transform 0.3s ease;
@@ -74,7 +74,7 @@
   font-size: 0.875rem;
   margin-bottom: 24px;
   line-height: 1.4;
-  color: #d1d5db;
+  color: #d1d1d1;
   transition: opacity 0.3s ease, height 0.3s ease;
 }
 
@@ -90,7 +90,7 @@
 
 .user-role {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: #aaaaaa;
 }
 
 /* ==== NAVEGACIÓN ==== */
@@ -107,7 +107,7 @@
   gap: 10px;
   padding: 10px 12px;
   border-radius: 8px;
-  color: #e5e7eb;
+  color: #e0e0e0;
   text-decoration: none;
   font-weight: 500;
   transition: background-color 0.2s ease, color 0.2s ease;
@@ -120,7 +120,6 @@
   font-size: 18px;
 }
 
-/* Oculta texto al colapsar y centra íconos */
 .sidebar.collapsed .nav-links a {
   justify-content: center;
 }
@@ -131,12 +130,12 @@
 
 /* ==== HOVER Y ACTIVO ==== */
 .nav-links a:hover {
-  background-color: #1f2937;
-  color: #60a5fa;
+  background-color: #383838;
+  color: #3ea6ff;
 }
 
 .nav-links a.active {
-  background-color: #1e40af;
+  background-color: #3ea6ff;
   color: #ffffff;
 }
 
@@ -174,7 +173,7 @@
   flex-grow: 1;
   height: 100vh;
   overflow-y: auto;
-  background-color: #f9fafb;
+  background-color: #0f0f0f;
   box-sizing: border-box;
   transition: margin-left 0.3s ease;
 }
@@ -209,8 +208,8 @@
   height: 32px;
   border-radius: 50%;
   background-color: transparent;
-  border: 1px solid #374151;
-  color: #f3f4f6;
+  border: 1px solid #4b4b4b;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -219,11 +218,10 @@
 }
 
 .menu-toggle.modern-toggle:hover {
-  background-color: #374151;
-  color: #93c5fd;
+  background-color: #4b4b4b;
+  color: #3ea6ff;
 }
 
-/* Rotación para indicar estado colapsado */
 .menu-toggle .rotated {
   transform: rotate(180deg);
   transition: transform 0.3s ease;
@@ -234,3 +232,23 @@
   height: 60px;
   vertical-align: middle;
 }
+
+/* ==== ESTILOS GLOBALES PARA EVITAR SCROLL Y FONDO BLANCO ==== */
+:host {
+  display: block;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #0f0f0f;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: #0f0f0f;
+}
+

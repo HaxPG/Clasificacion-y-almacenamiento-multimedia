@@ -1,12 +1,13 @@
 /* Contenedor principal de la tarjeta de listado de usuarios */
 .user-list-card {
-  background: #ffffff;
+  background: #212121;
   border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
   padding: 30px;
   max-width: 1000px;
   margin: 40px auto;
   font-family: 'Segoe UI', sans-serif;
+  color: #f1f1f1;
 }
 
 /* Barra superior con título y botón de acción */
@@ -20,15 +21,15 @@
 /* Título dentro de la barra */
 .header-bar h2 {
   font-size: 1.7rem;
-  color: #1f2937;
+  color: #ffffff;
   margin: 0;
 }
 
 /* Botón para agregar nuevo usuario */
 .add-user-btn {
   padding: 10px 18px;
-  background-color: #3b82f6;
-  color: white;
+  background-color: #3ea6ff;
+  color: #0f0f0f;
   border: none;
   border-radius: 8px;
   font-weight: bold;
@@ -37,7 +38,7 @@
 }
 
 .add-user-btn:hover {
-  background-color: #2563eb;
+  background-color: #1e90ff;
 }
 
 /* Estilo general de la tabla de usuarios */
@@ -45,7 +46,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95rem;
-  color: #374151;
+  color: #e0e0e0;
 }
 
 /* Celdas de cabecera y contenido de la tabla */
@@ -53,12 +54,12 @@
 .user-table td {
   padding: 12px 16px;
   text-align: left;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #333;
 }
 
 /* Fondo para la cabecera de la tabla */
 .user-table thead {
-  background-color: #f3f4f6;
+  background-color: #2c2c2c;
 }
 
 /* Estilo base para botones de acción (editar, eliminar) */
@@ -74,7 +75,7 @@
 /* Botón de editar */
 .action-btn.edit {
   background-color: #facc15;
-  color: #1f2937;
+  color: #0f0f0f;
 }
 
 .action-btn.edit:hover {
@@ -93,8 +94,8 @@
 
 /* Mensaje de error al fallar una acción */
 .alert-error {
-  color: #b91c1c;
-  background-color: #fee2e2;
+  color: #fca5a5;
+  background-color: #7f1d1d;
   padding: 12px;
   border-radius: 8px;
   margin-bottom: 16px;
@@ -106,5 +107,5 @@
   text-align: center;
   padding: 20px;
   font-style: italic;
-  color: #6b7280;
+  color: #9ca3af;
 }

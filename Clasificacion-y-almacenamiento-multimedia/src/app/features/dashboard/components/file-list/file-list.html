@@ -1,12 +1,12 @@
 <!-- Contenedor principal de la vista de archivos -->
 <div class="file-list-container">
-  <h2>Gestión de Archivos Multimedia</h2>
+  <h2>Visualizador de Multimedia</h2>
 
   <!-- Sección de filtros -->
   <div class="filters-section">
     <input
       type="text"
-      placeholder="🔖 Buscar por etiquetas..."
+      placeholder="Buscar..."
       [(ngModel)]="tagTerm"
       (input)="onSearch()"
       class="tag-search-input"
@@ -75,18 +75,30 @@
         </div>
       </div>
 
-      <!-- Paginación -->
-      <div class="pagination-controls" *ngIf="data.pagination && data.pagination.pages > 1">
-        <button (click)="goToPage(data.pagination.page - 1)" [disabled]="data.pagination.page === 1">Anterior</button>
-        <button
-          *ngFor="let page of getPagesArray(data.pagination.page, data.pagination.pages)"
-          [class.active]="page === data.pagination.page"
-          (click)="goToPage(page)"
-        >
-          {{ page }}
-        </button>
-        <button (click)="goToPage(data.pagination.page + 1)" [disabled]="data.pagination.page === data.pagination.pages">Siguiente</button>
-      </div>
+   <!-- Paginación moderna -->
+<div class="custom-pagination" *ngIf="data.pagination && data.pagination.pages > 1">
+  <ul class="ngx-pagination">
+    <li [class.disabled]="data.pagination.page === 1">
+      <span *ngIf="data.pagination.page === 1">Anterior</span>
+      <a *ngIf="data.pagination.page > 1" (click)="goToPage(data.pagination.page - 1)">Anterior</a>
+    </li>
+
+    <li *ngFor="let page of getPagesArray(data.pagination.page, data.pagination.pages)">
+      <a
+        *ngIf="page !== data.pagination.page"
+        (click)="goToPage(page)"
+      >
+        {{ page }}
+      </a>
+      <span *ngIf="page === data.pagination.page" class="current">{{ page }}</span>
+    </li>
+
+    <li [class.disabled]="data.pagination.page === data.pagination.pages">
+      <span *ngIf="data.pagination.page === data.pagination.pages">Siguiente</span>
+      <a *ngIf="data.pagination.page < data.pagination.pages" (click)="goToPage(data.pagination.page + 1)">Siguiente</a>
+    </li>
+  </ul>
+</div>
 
       <!-- Modal -->
 <!-- Modal de detalle del archivo seleccionado -->

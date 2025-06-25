@@ -1,13 +1,12 @@
 <div class="dashboard-container">
   <!-- ===== SIDEBAR ===== -->
   <aside class="sidebar" [class.collapsed]="isCollapsed">
-    
     <!-- Encabezado del sidebar -->
     <div class="sidebar-header">
       <span class="brand">
-  <img src="../../../../../favicon.ico" alt="Logo" class="logo-icon" />
-  <strong>interest UNACH</strong>
-</span>
+        <img src="../../../../../favicon.ico" alt="Logo" class="logo-icon" />
+        <strong>interest UNACH</strong>
+      </span>
       <button
         class="menu-toggle modern-toggle"
         (click)="toggleSidebar()"
@@ -62,3 +61,10 @@
     <router-outlet></router-outlet>
   </main>
 </div>
+
+  <div class="pagination">
+    <button disabled>Anterior</button>
+    <button class="active">1</button>
+    <button>2</button>
+    <button>Siguiente</button>
+  </div>
